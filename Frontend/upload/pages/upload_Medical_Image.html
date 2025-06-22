@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Medical Image</title>
+  <link rel="stylesheet" href="../css/upload_style.css">
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar">
+  <div class="logo"><a href="../index.html">BioData Viewer</a></div>
+  <ul>
+    <li><a href="../index.html">Home</a></li>
+  </ul>
+</nav>
+
+<!-- Upload Box -->
+<div class="upload-box">
+  <h2>Upload a Medical Image</h2>
+  <p>Please upload a file in <strong>.dcm</strong> or <strong>.nii</strong> format.</p>
+
+  <div class="upload-area">
+    <input type="file" id="modelInput" accept=".dcm,.nii">
+    <button onclick="handleUpload()">Upload</button>
+    <p id="filename"></p>
+  </div>
+</div>
+
+
+<script>
+  function handleUpload() {
+    const fileInput = document.getElementById('modelInput');
+    const file = fileInput.files[0];
+    const display = document.getElementById('filename');
+
+    if (!file) {
+      alert("Please select a file.");
+      return;
+    }
+
+    const allowedTypes = ['.dcm', '.nii'];
+    const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+
+    if (!allowedTypes.includes(extension)) {
+      alert("Invalid file type. Please upload .stl or .obj.");
+      return;
+    }
+
+    display.textContent = "Uploaded: " + file.name;
+
+    // TODO: Add real upload logic here (e.g., POST to server)
+  }
+</script>
+
+</body>
+</html>
