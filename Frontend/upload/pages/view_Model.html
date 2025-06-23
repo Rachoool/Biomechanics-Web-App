@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Model Viewer</title>
+  <link rel="stylesheet" href="../css/upload_style.css">
+  <style>
+    body {
+      margin: 0;
+      background-color: #f8f8f8;
+      font-family: sans-serif;
+    }
+
+    /* "View" label under navbar on the top-left */
+    .sidebar {
+      font-weight: bold;
+      font-size: 1.5rem;
+      margin: 20px 0 0 30px;
+    }
+
+    /* Container for viewer and controls */
+    .main-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      margin-top: 40px;
+      gap: 20px;
+    }
+
+    /* 3D viewer wrapper */
+    .viewer-wrapper {
+      position: relative;
+    }
+
+    /* 3D preview area */
+    .viewer-container {
+      width: 800px;
+      height: 500px;
+      border: 2px solid #999;
+      background-color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.4rem;
+    }
+
+    /* Vertical control buttons aligned right of the preview box */
+    .control-buttons {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 500px; 
+    }
+
+    /* Buttons styling */
+    .control-buttons button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    /* Optional: align buttons to top and bottom */
+    .top-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bottom-button {
+      align-self: flex-end;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top navigation bar -->
+<nav class="navbar">
+  <div class="logo"><a href="index.html">BioData Viewer</a></div>
+  <ul>
+    <li><a href="index.html">Upload</a></li>
+  </ul>
+</nav>
+
+<!-- "View" label under navbar -->
+<div class="sidebar">View</div>
+
+<!-- Main section with viewer and external buttons -->
+<div class="main-container">
+  <!-- 3D model preview box -->
+  <div class="viewer-wrapper">
+    <div class="viewer-container">
+      3D Model
+    </div>
+  </div>
+
+  <!-- Buttons stacked vertically to the right -->
+  <div class="control-buttons">
+    <!-- Rotate / Zoom / Pan at the top -->
+    <div class="top-buttons">
+      <button>Rotate</button>
+      <button>Zoom</button>
+      <button>Pan</button>
+    </div>
+    <!-- Save at the bottom -->
+    <button class="bottom-button">Save</button>
+  </div>
+</div>
+
+</body>
+</html>
