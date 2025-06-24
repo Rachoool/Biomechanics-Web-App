@@ -1,0 +1,103 @@
+/* === Global Reset === */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+/* === Navbar === */
+.navbar {
+  background-color: #00b8a9;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo */
+.navbar .logo a {
+  display: inline-block;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Nav links */
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+  margin: 0;
+}
+
+.navbar ul li a {
+  display: inline-block;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Hover: smooth zoom + color change */
+.navbar .logo a:hover,
+.navbar ul li a:hover {
+  color: rgb(240, 248, 255);
+  transform: scale(1.2);
+}
+
+/* === Upload Box === */
+.upload-box {
+  max-width: 600px;
+  margin: 5rem auto 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Form elements */
+select,
+button {
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  margin-top: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: #00b8a9;
+  color: white;
+  border-color: #00b8a9;
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+#modelInput {
+  display: block;
+  margin: 0 auto;
+}
+
+#filename {
+  color: #00b8a9;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
