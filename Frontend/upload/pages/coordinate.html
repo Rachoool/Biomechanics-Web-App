@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Coordinate View</title>
+  <link rel="stylesheet" href="../css/coordinate_style.css">
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar">
+  <div class="logo"><a href="index.html">BioData Viewer</a></div>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+  </ul>
+</nav>
+
+<!-- Main Section -->
+<div class="main-container">
+  <h2>View Biomedical Image in <strong>X/Y/Z</strong> Directions</h2>
+  <div class="content-box">
+
+    <!-- Left: Model View Box -->
+    <div class="model-area">
+      <div class="model-placeholder" id="modelView">
+        3D Model
+        <!--   在图上添加click功能 -->
+      </div>
+    </div>
+
+    <!-- Right: Points Panel -->
+    <div class="points-box">
+      <h3>Points</h3>
+      <table>
+        <thead>
+        <tr><th>Name</th><th>Location</th></tr>
+        </thead>
+        <tbody id="pointsTable">
+        <!--  插入点数据 -->
+
+        </tbody>
+      </table>
+
+      <!-- button (未绑定功能） -->
+      <div class="btn-group">
+        <button id="editBtn">Edit</button>
+        <button id="deleteBtn">Delete</button>
+      </div>
+
+      <button class="add-btn" id="addPointBtn">Add Point</button>
+      <div class="status-text" id="statusText">
+        <!-- if not click "Add point" button, cannot click on the image -->
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
