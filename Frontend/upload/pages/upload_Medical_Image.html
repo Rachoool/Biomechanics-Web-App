@@ -50,6 +50,26 @@
     display.textContent = "Uploaded: " + file.name;
 
     // TODO: Add real upload logic here (e.g., POST to server)
+    const formData = new FormData();
+    formData.append("file", file);
+
+    fetch("http://127.0.0.1:5000/api/upload", {
+      method: "POST",
+      body: formData,
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          alert("Upload successful: " + data.filename);
+        } else {
+          alert("Upload failed: " + data.message);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Upload error");
+      });
+
   }
 </script>
 
