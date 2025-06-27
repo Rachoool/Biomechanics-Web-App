@@ -30,47 +30,46 @@
 
 <script>
   function handleUpload() {
-    const fileInput = document.getElementById('modelInput');
-    const file = fileInput.files[0];
-    const display = document.getElementById('filename');
+  const fileInput = document.getElementById('modelInput');
+  const file = fileInput.files[0];
+  const display = document.getElementById('filename');
 
-    if (!file) {
-      alert("Please select a file.");
-      return;
-    }
-
-    const allowedTypes = ['.dcm', '.nii'];
-    const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
-
-    if (!allowedTypes.includes(extension)) {
-      alert("Invalid file type. Please upload .stl or .obj.");
-      return;
-    }
-
-    display.textContent = "Uploaded: " + file.name;
-
-    // TODO: Add real upload logic here (e.g., POST to server)
-    const formData = new FormData();
-    formData.append("file", file);
-
-    fetch("http://127.0.0.1:5000/api/upload", {
-      method: "POST",
-      body: formData,
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") {
-          alert("Upload successful: " + data.filename);
-        } else {
-          alert("Upload failed: " + data.message);
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert("Upload error");
-      });
-
+  if (!file) {
+    alert("Please select a file.");
+    return;
   }
+
+  const allowedTypes = ['.dcm', '.nii'];
+  const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+
+  if (!allowedTypes.includes(extension)) {
+    alert("Invalid file type. Please upload .dcm or .nii.");
+    return;
+  }
+
+  display.textContent = "Uploaded: " + file.name;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  fetch("http://127.0.0.1:5000/api/upload", {
+    method: "POST",
+    body: formData,
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "success") {
+        window.location.href = `coordinate.html?file=${encodeURIComponent(data.filename)}`;
+      } else {
+        alert("Upload failed: " + data.message);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Upload error");
+    });
+}
+
 </script>
 
 </body>
