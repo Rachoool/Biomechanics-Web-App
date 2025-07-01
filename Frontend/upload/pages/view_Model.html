@@ -122,7 +122,7 @@
     controls.dampingFactor = 0.05;
 
     const ext = filename.split('.').pop().toLowerCase();
-    const modelUrl = `/uploads/${filename}`;
+    const modelUrl = `http://localhost:5000/uploads/${filename}`;
 
     function centerAndRender(object) {
       scene.add(object);
