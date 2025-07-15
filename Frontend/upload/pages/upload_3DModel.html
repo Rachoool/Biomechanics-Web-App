@@ -3,17 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <title>Upload 3D Model</title>
+  <script src="../theme.js"></script>
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    })();
+  </script>
+
   <link rel="stylesheet" href="../css/upload_style.css">
 </head>
 <body>
 
 <!-- Navigation Bar -->
 <nav class="navbar">
-  <div class="logo"><a href="../index.html">BioData Viewer</a></div>
-  <ul>
-    <li><a href="index.html">Home</a></li>
-  </ul>
+  <div class="logo"><a href="index.html">BioData Viewer</a></div>
+  <div class="nav-right">
+    <ul>
+      <li><a href="index.html" class="nav-button">Home</a></li>
+    </ul>
+
+    <!-- Theme Toggle Dropdown -->
+    <div class="nav-button theme-toggle">
+      <button class="theme-button" id="themeToggle">
+        <span class="theme-icon" id="themeIcon">🌙</span>
+        <span>Mode</span>
+      </button>
+      <div class="dropdown-menu" id="themeDropdown">
+        <div class="dropdown-item active" data-theme="light">
+          <span>☀️</span>
+          <span>Light Mode</span>
+        </div>
+        <div class="dropdown-item" data-theme="dark">
+          <span>🌙</span>
+          <span>Dark Mode</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </nav>
+
+<!-- Overlay for closing dropdown -->
+<div class="dropdown-overlay" id="dropdownOverlay"></div>
 
 <!-- Upload Box -->
 <div class="upload-box">

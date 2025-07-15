@@ -3,90 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <title>Coordinate View</title>
+  <script src="../theme.js"></script>
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    })();
+  </script>
   <link rel="stylesheet" href="../css/coordinate_style.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background-color: #f7f7f7;
-    }
-    .main-container {
-      padding: 20px;
-    }
-    .content-box {
-      display: flex;
-      gap: 30px;
-      margin-top: 20px;
-    }
-    .model-area {
-      flex: 1;
-      border: 2px solid #aaa;
-      background-color: white;
-    }
-    .model-placeholder {
-      width: 600px;
-      height: 500px;
-    }
-    .points-box {
-      width: 300px;
-      border: 2px solid #0aa;
-      padding: 10px;
-      background-color: #fff;
-      border-radius: 10px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      padding: 6px 10px;
-      border: 1px solid #ccc;
-    }
-    .btn-group {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-    }
-    .add-btn {
-      margin-top: 10px;
-      padding: 10px 12px;
-      background-color: #00aaa5;
-      color: white;
-      border: none;
-      width: 100%;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .status-text {
-      margin-top: 10px;
-      font-size: 0.9rem;
-      color: #666;
-    }
-    nav.navbar {
-      background-color: #333;
-      color: white;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    nav.navbar .logo a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
-    nav.navbar ul {
-      list-style: none;
-      display: flex;
-      gap: 20px;
-    }
-    nav.navbar ul li a {
-      color: white;
-      text-decoration: none;
-    }
-  </style>
 
   <!-- vtk.js and itk.js -->
   <script src="https://unpkg.com/vtk.js"></script>
@@ -97,10 +21,33 @@
 <!-- Navigation Bar -->
 <nav class="navbar">
   <div class="logo"><a href="index.html">BioData Viewer</a></div>
-  <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-  </ul>
+  <div class="nav-right">
+    <ul>
+      <li><a href="index.html" class="nav-button">Home</a></li>
+    </ul>
+
+    <!-- Theme Toggle Dropdown -->
+    <div class="nav-button theme-toggle">
+      <button class="theme-button" id="themeToggle">
+        <span class="theme-icon" id="themeIcon">🌙</span>
+        <span>Theme</span>
+      </button>
+      <div class="dropdown-menu" id="themeDropdown">
+        <div class="dropdown-item active" data-theme="light">
+          <span>☀️</span>
+          <span>Light Mode</span>
+        </div>
+        <div class="dropdown-item" data-theme="dark">
+          <span>🌙</span>
+          <span>Dark Mode</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </nav>
+
+<!-- Overlay for closing dropdown -->
+<div class="dropdown-overlay" id="dropdownOverlay"></div>
 
 <!-- Main Section -->
 <div class="main-container">

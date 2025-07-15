@@ -3,12 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>Model Viewer</title>
+  <script src="../theme.js"></script>
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    })();
+  </script>
   <link rel="stylesheet" href="../css/upload_style.css">
   <style>
+
     body {
+      font-family: Arial, sans-serif;
       margin: 0;
-      background-color: #f8f8f8;
-      font-family: sans-serif;
+      padding: 0;
+      background-color: var(--bg-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .sidebar {
@@ -71,9 +81,29 @@
 <!-- Top navigation bar -->
 <nav class="navbar">
   <div class="logo"><a href="index.html">BioData Viewer</a></div>
-  <ul>
-    <li><a href="index.html">Upload</a></li>
-  </ul>
+  <div class="nav-right">
+    <ul>
+      <li><a href="index.html" class="nav-button">Home</a></li>
+    </ul>
+
+    <!-- Theme Toggle Dropdown -->
+    <div class="nav-button theme-toggle">
+      <button class="theme-button" id="themeToggle">
+        <span class="theme-icon" id="themeIcon">🌙</span>
+        <span>Theme</span>
+      </button>
+      <div class="dropdown-menu" id="themeDropdown">
+        <div class="dropdown-item active" data-theme="light">
+          <span>☀️</span>
+          <span>Light Mode</span>
+        </div>
+        <div class="dropdown-item" data-theme="dark">
+          <span>🌙</span>
+          <span>Dark Mode</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </nav>
 
 <div class="sidebar">View</div>
@@ -95,6 +125,9 @@
     <button class="bottom-button" onclick="alert('Save feature not implemented')">Save</button>
   </div>
 </div>
+
+<!-- Overlay for closing dropdown -->
+<div class="dropdown-overlay" id="dropdownOverlay"></div>
 
 <script>
   const container = document.getElementById("viewerContainer");

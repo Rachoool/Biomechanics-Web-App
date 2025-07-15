@@ -1,20 +1,61 @@
-/* === Global Style === */
+/* === CSS Variables === */
+:root {
+  --bg-color: #f4f4f4;
+  --text-color: #333333;
+  --nav-bg: #00b8a9;
+  --nav-text: #ffffff;
+  --box-bg: #ffffff;
+  --box-border: #00b8a9;
+  --button-bg: #ffffff;
+  --button-text: #333333;
+  --button-hover-bg: #00b8a9;
+  --button-hover-text: #ffffff;
+  --dropdown-bg: #ffffff;
+  --dropdown-hover: #f5f5f5;
+  --table-header-bg: #e7f9f8;
+  --table-border: #ccc;
+  --status-text: #777;
+}
+
+/* === Dark Theme Variables === */
+[data-theme='dark'] {
+  --bg-color: #1e1e1e;
+  --text-color: #ffffff;
+  --nav-bg: #2d2d2d;
+  --nav-text: #ffffff;
+  --box-bg: #2a2a2a;
+  --box-border: #00b8a9;
+  --button-bg: #333333;
+  --button-text: #ffffff;
+  --button-hover-bg: #00b8a9;
+  --button-hover-text: #ffffff;
+  --dropdown-bg: #3a3a3a;
+  --dropdown-hover: #444444;
+  --table-header-bg: #2e2e2e;
+  --table-border: #555;
+  --status-text: #aaa;
+}
+
+/* === Global Reset === */
 body {
-  font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
+  font-family: Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* === Navbar === */
 .navbar {
-  background-color: #00b8a9;
+  background-color: var(--nav-bg);
   color: white;
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
 }
 
 .navbar .logo a {
@@ -28,6 +69,7 @@ body {
   position: relative;
 }
 
+/* Nav links */
 .navbar ul {
   list-style: none;
   display: flex;
@@ -45,14 +87,144 @@ body {
   position: relative;
 }
 
-/* Hover: smooth zoom + color change */
 .navbar .logo a:hover,
 .navbar ul li a:hover {
   color: rgb(240, 248, 255);
   transform: scale(1.2);
 }
 
-/* === Main Content === */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* === Theme Toggle === */
+.theme-toggle {
+  position: relative;
+}
+
+.theme-button,
+.theme-button:focus,
+.theme-button:hover,
+.theme-button:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.theme-button {
+  border: none;
+  background-color: transparent;
+}
+
+.theme-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+}
+
+.theme-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 1px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 1.1rem;
+  margin-top: 1px;
+}
+
+.theme-button:hover {
+  color: rgb(240, 248, 255);
+  transform: scale(1.2);
+}
+
+.theme-icon {
+  font-size: 1.2rem;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--dropdown-bg);
+  border: 1px solid var(--box-border);
+  border-radius: 10px;
+  box-shadow: 0 2px 20px var(--dropdown-shadow);
+  min-width: 150px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--dropdown-hover);
+}
+
+.dropdown-item:first-child {
+  border-top-left-radius: 9px;
+  border-top-right-radius: 9px;
+}
+
+.dropdown-item:last-child {
+  border-bottom-left-radius: 9px;
+  border-bottom-right-radius: 9px;
+}
+
+.dropdown-item[data-theme="light"].active {
+  background-color: #00b8a9;
+  color: white;
+}
+
+.dropdown-item[data-theme="dark"].active {
+  background-color: #555555;
+  color: white;
+}
+[data-theme="light"] .dropdown-item:hover {
+  background-color: #007f73;
+  color: white;
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+  background-color: #222222;
+  color: white;
+}
+
+/* Close dropdown overlay */
+.dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  display: none;
+}
+
+/* === Main Layout === */
 .main-container {
   max-width: 1200px;
   margin: 3rem auto;
@@ -61,8 +233,8 @@ body {
 
 .main-container h2 {
   text-align: center;
-  font-size: 1.6rem;
   margin-bottom: 2rem;
+  font-size: 1.6rem;
 }
 
 /* === Layout Flex === */
@@ -72,99 +244,80 @@ body {
   gap: 2rem;
 }
 
-/* === Left Panel (Model Box) === */
+/* === Left: Model View === */
 .model-area {
   flex: 2;
-  background-color: white;
-  border: 2px solid #00b8a9;
+  background-color: var(--box-bg);
+  border: 2px solid var(--box-border);
   border-radius: 10px;
   min-height: 480px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  color: #666;
-  font-size: 1.3rem;
+  align-items: center;
+  font-size: 1.2rem;
 }
 
-/* === Right Panel (Point Table) === */
+/* === Right: Points Panel === */
 .points-box {
   flex: 1.1;
-  background-color: white;
-  border: 2px solid #00b8a9;
+  background-color: var(--box-bg);
+  border: 2px solid var(--box-border);
   border-radius: 10px;
   padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .points-box h3 {
-  margin-top: 0;
   text-align: center;
-  color: black;
+  margin-top: 0;
 }
 
-/* === Table === */
+/* === Table Styling === */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 1rem;
+  margin-top: 1rem;
   font-size: 0.95rem;
 }
 
 th, td {
-  border: 1px solid #ccc;
   padding: 0.5rem;
   text-align: center;
+  border: 1px solid var(--table-border);
 }
 
 th {
-  background-color: #e7f9f8;
-  color: #333;
+  background-color: var(--table-header-bg);
+  color: var(--text-color);
 }
 
 /* === Buttons === */
-.btn-group {
-  display: flex;
-  gap: 0.6rem;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-
-button {
-  padding: 0.4rem 1rem;
-  font-size: 0.9rem;
-  background-color: #fff;
-  color: black;
-  border: 1px solid #00b8a9;
+button, .add-btn {
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  margin-top: 1rem;
+  border: 1px solid var(--box-border);
   border-radius: 5px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  background-color: var(--button-bg);
+  color: var(--button-text);
 }
 
-button:hover {
-  background-color: #00b8a9;
-  color: white;
+button:hover, .add-btn:hover {
+  background-color: var(--button-hover-bg);
+  color: var(--button-hover-text);
+  border-color: var(--button-hover-bg);
 }
 
 .add-btn {
-  display: block;
   width: 100%;
-  background-color: #00b8a9;
-  color: white;
   font-weight: bold;
-  border: 1px solid #00b8a9;
-  border-radius: 5px;
-  padding: 0.6rem;
-  transition: all 0.3s ease;
-}
-
-.add-btn:hover {
-  background-color: #00998a;
 }
 
 /* === Status Text === */
 .status-text {
-  text-align: center;
   margin-top: 1rem;
+  text-align: center;
   font-style: italic;
-  color: #777;
+  color: var(--status-text);
 }
