@@ -3,7 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <title>Coordinate View</title>
-  <link rel="stylesheet" href="../css/coordinate_style.css">
+  <link rel="stylesheet" href="../css/coordinate_style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #f7f7f7;
+    }
+    .main-container {
+      padding: 20px;
+    }
+    .content-box {
+      display: flex;
+      gap: 30px;
+      margin-top: 20px;
+    }
+    .model-area {
+      flex: 1;
+      border: 2px solid #aaa;
+      background-color: white;
+    }
+    .model-placeholder {
+      width: 600px;
+      height: 500px;
+    }
+    .points-box {
+      width: 300px;
+      border: 2px solid #0aa;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+    }
+    .btn-group {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    .add-btn {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background-color: #00aaa5;
+      color: white;
+      border: none;
+      width: 100%;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .status-text {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    nav.navbar {
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav.navbar .logo a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    nav.navbar ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    nav.navbar ul li a {
+      color: white;
+      text-decoration: none;
+    }
+  </style>
+
+  <!-- vtk.js and itk.js -->
+  <script src="https://unpkg.com/vtk.js"></script>
+  <script src="https://unpkg.com/itk@15.0.0/itk.min.js"></script>
 </head>
 <body>
 
@@ -23,8 +110,7 @@
     <!-- Left: Model View Box -->
     <div class="model-area">
       <div class="model-placeholder" id="modelView">
-        3D Model
-        <!--   在图上添加click功能 -->
+        <!-- Viewer renders here -->
       </div>
     </div>
 
@@ -35,25 +121,117 @@
         <thead>
         <tr><th>Name</th><th>Location</th></tr>
         </thead>
-        <tbody id="pointsTable">
-        <!--  插入点数据 -->
-
-        </tbody>
+        <tbody id="pointsTable"></tbody>
       </table>
 
-      <!-- button (未绑定功能） -->
       <div class="btn-group">
         <button id="editBtn">Edit</button>
         <button id="deleteBtn">Delete</button>
       </div>
 
       <button class="add-btn" id="addPointBtn">Add Point</button>
-      <div class="status-text" id="statusText">
-        <!-- if not click "Add point" button, cannot click on the image -->
-      </div>
+      <div class="status-text" id="statusText"></div>
     </div>
   </div>
 </div>
+
+<!-- Script for viewer logic -->
+<script>
+  const filename = new URLSearchParams(window.location.search).get("file");
+  const modelView = document.getElementById("modelView");
+
+  if (!filename) {
+    modelView.textContent = "No file provided.";
+  } else {
+    modelView.textContent = "";
+
+    const vtk = window.vtk;
+    const fileUrl = `/uploads/${filename}`;
+
+    // Setup vtk rendering
+    const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
+    const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
+    renderWindow.addRenderer(renderer);
+
+    const openGLRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
+    openGLRenderWindow.setContainer(modelView);
+    renderWindow.addView(openGLRenderWindow);
+    openGLRenderWindow.setSize(modelView.clientWidth, modelView.clientHeight);
+
+    const interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+    interactor.setView(openGLRenderWindow);
+    interactor.initialize();
+    interactor.bindEvents(modelView);
+
+    // Load image using itk.js
+    fetch(fileUrl)
+      .then(response => response.arrayBuffer())
+      .then(buffer => {
+        return window.itk.readImageArrayBuffer(null, buffer);
+      })
+      .then(({ image, webWorker }) => {
+        webWorker.terminate();
+
+        const vtkImage = vtk.Common.DataModel.vtkImageData.newInstance();
+        const dataArray = vtk.Common.Core.vtkDataArray.newInstance({
+          name: 'Scalars',
+          values: image.data,
+          numberOfComponents: 1,
+        });
+
+        vtkImage.getPointData().setScalars(dataArray);
+        vtkImage.setDimensions(...image.size);
+        vtkImage.setSpacing(...image.spacing);
+        vtkImage.setOrigin(...image.origin);
+
+        const mapper = vtk.Rendering.Core.vtkImageSliceMapper.newInstance();
+        const slice = vtk.Rendering.Core.vtkImageSlice.newInstance();
+        mapper.setInputData(vtkImage);
+        slice.setMapper(mapper);
+
+        renderer.addViewProp(slice);
+        renderer.resetCamera();
+        renderWindow.render();
+      })
+      .catch(err => {
+        console.error("Failed to load medical image:", err);
+        modelView.textContent = "Failed to load image.";
+      });
+
+    // Point annotation
+    let addingPoint = false;
+    const statusText = document.getElementById("statusText");
+    const pointsTable = document.getElementById("pointsTable");
+
+    document.getElementById("addPointBtn").addEventListener("click", () => {
+      addingPoint = true;
+      statusText.textContent = "Click on the image to add a point...";
+    });
+
+    modelView.addEventListener("click", (event) => {
+      if (!addingPoint) return;
+
+      const x = event.offsetX;
+      const y = event.offsetY;
+      const name = prompt("Enter point name:");
+      if (!name) return;
+
+      const newRow = pointsTable.insertRow();
+      newRow.innerHTML = `<td>${name}</td><td>(${x}, ${y})</td>`;
+
+      statusText.textContent = "";
+      addingPoint = false;
+    });
+
+    document.getElementById("editBtn").addEventListener("click", () => {
+      alert("Edit functionality not implemented.");
+    });
+
+    document.getElementById("deleteBtn").addEventListener("click", () => {
+      alert("Delete functionality not implemented.");
+    });
+  }
+</script>
 
 </body>
 </html>
