@@ -18,10 +18,13 @@
       margin: 0;
       padding: 0;
       background-color: var(--bg-color);
+      color: var(--text-color);
       transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .sidebar {
+      background-color: transparent;
+      color: var(--text-color);
       font-weight: bold;
       font-size: 1.5rem;
       margin: 20px 0 0 30px;
@@ -42,7 +45,7 @@
     .viewer-container {
       width: 800px;
       height: 500px;
-      border: 2px solid #999;
+      border: 2px solid #ccc;
       background-color: white;
     }
 
@@ -68,6 +71,78 @@
     .bottom-button {
       align-self: flex-end;
     }
+    .file-list-container {
+      width: 200px;
+      height: 500px;
+      overflow-y: auto;
+      border: 2px solid #ccc;
+      background-color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .file-list {
+      list-style: none;
+      padding: 10px;
+      margin: 0;
+    }
+
+    .file-list li {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .file-list li:hover {
+      background-color: #f0f0f0;
+    }
+    :root {
+      --bg-color: #fff;
+      --text-color: #000;
+      --sidebar-bg: #f9f9f9;
+      --file-list-bg: #fff;
+      --file-list-hover-bg: #f0f0f0;
+      --border-color: #ccc;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --text-color: #eee;
+      --sidebar-bg: #121212;
+      --file-list-bg: #2c2c2c;
+      --file-list-hover-bg: #444444;
+      --border-color: #555;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .file-list-container {
+      background-color: var(--file-list-bg);
+      border-color: var(--border-color);
+      color: var(--text-color);
+    }
+
+    .file-list li {
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+
+    .file-list li:hover {
+      background-color: var(--file-list-hover-bg);
+    }
+
+    .viewer-container {
+      background-color: var(--file-list-bg);
+      color: var(--text-color);
+    }
+
+
   </style>
 
   <!-- ✅ Three.js v0.146.0 with global OrbitControls support -->
@@ -109,18 +184,35 @@
 <div class="sidebar">View</div>
 
 <!-- Main section -->
-<div class="main-container">
+<!-- <div class="main-container">
   <div class="viewer-wrapper">
     <div class="viewer-container" id="viewerContainer">
       Loading...
     </div>
-  </div>
+  </div> -->
+  <div class="main-container">
+    <div class="file-list-container" id="fileListContainer">
+      <ul class="file-list" id="fileList">
+       
+        <li>example1.stl</li>
+        <li>example2.obj</li>
+        <li>long_filename_model_3.obj</li>
+        
+      </ul>
+    </div>
+  
+    <div class="viewer-wrapper">
+      <div class="viewer-container" id="viewerContainer">
+        Loading...
+      </div>
+    </div>
+  
 
   <div class="control-buttons">
     <div class="top-buttons">
-      <button onclick="alert('Use mouse to rotate')">Rotate</button>
+      <!-- <button onclick="alert('Use mouse to rotate')">Rotate</button>
       <button onclick="alert('Scroll to zoom')">Zoom</button>
-      <button onclick="alert('Right-click to pan')">Pan</button>
+      <button onclick="alert('Right-click to pan')">Pan</button> -->
     </div>
     <button class="bottom-button" onclick="alert('Save feature not implemented')">Save</button>
   </div>
