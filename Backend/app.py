@@ -31,11 +31,11 @@ def serve_uploaded_file(filename):
 
 @app.route('/api/models')
 def list_models():
-    files = []
-    for f in os.listdir(app.config['UPLOAD_FOLDER']):
-        if f.lower().endswith(('.stl', '.obj')):
-            files.append(f)
-    return jsonify(files)
+    files = [
+        f for f in os.listdir(app.config['UPLOAD_FOLDER'])
+        if f.lower().endswith(('.stl', '.obj'))
+    ]
+    return jsonify({"models": files})
 
 @app.route('/<path:filename>')
 def serve_frontend(filename):

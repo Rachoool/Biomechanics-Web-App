@@ -222,14 +222,28 @@
 <div class="dropdown-overlay" id="dropdownOverlay"></div>
 
 <script>
-  const container = document.getElementById("viewerContainer");
-  const params = new URLSearchParams(window.location.search);
-  const filename = params.get("file");
+  async function loadModelList() {
+    try {
+      const res = await fetch("http://localhost:5000/api/models");
+      const data = await res.json();
 
-  if (!filename || !filename.includes(".")) {
-    container.textContent = "No model file specified.";
-  } else {
-    container.textContent = "";
+      const fileList = document.getElementById("fileList");
+      fileList.innerHTML = ""; 
+
+      data.models.forEach(file => {
+        const li = document.createElement("li");
+        li.textContent = file;
+        li.onclick = () => loadModel(file); 
+        fileList.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Failed to load models:", err);
+    }
+  }
+
+  function loadModel(filename) {
+    const container = document.getElementById("viewerContainer");
+    container.innerHTML = ""; 
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, 800 / 500, 0.1, 1000);
@@ -287,6 +301,7 @@
       renderer.render(scene, camera);
     }
   }
+  window.onload = loadModelList;
 </script>
 
 </body>
