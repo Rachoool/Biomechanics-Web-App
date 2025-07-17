@@ -214,6 +214,10 @@
       <button onclick="alert('Scroll to zoom')">Zoom</button>
       <button onclick="alert('Right-click to pan')">Pan</button> -->
     </div>
+    <div class="top-buttons">
+      <button onclick="toggleLandmarkMode()" id="landmarkBtn">Enter Landmark Mode</button>
+    </div>
+
     <button class="bottom-button" onclick="alert('Save feature not implemented')">Save</button>
   </div>
 </div>
@@ -222,20 +226,37 @@
 <div class="dropdown-overlay" id="dropdownOverlay"></div>
 
 <script>
+  let renderer, camera, scene, controls;
+  let landmarkMode = false;
+  const landmarks = [];
+  const mouse = new THREE.Vector2();
+  const raycaster = new THREE.Raycaster();
+
+  function getQueryParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+  }
+
   async function loadModelList() {
     try {
       const res = await fetch("http://localhost:5000/api/models");
-      const data = await res.json();
+      const data = await res.json(); 
 
       const fileList = document.getElementById("fileList");
-      fileList.innerHTML = ""; 
+      fileList.innerHTML = "";
 
       data.models.forEach(file => {
         const li = document.createElement("li");
         li.textContent = file;
-        li.onclick = () => loadModel(file); 
+        li.onclick = () => loadModel(file);
         fileList.appendChild(li);
       });
+
+      const initialFile = getQueryParam("file");
+      if (initialFile && data.models.includes(initialFile)) {
+        loadModel(initialFile);
+      }
+
     } catch (err) {
       console.error("Failed to load models:", err);
     }
@@ -245,18 +266,18 @@
     const container = document.getElementById("viewerContainer");
     container.innerHTML = ""; 
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, 800 / 500, 0.1, 1000);
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, 800 / 500, 0.1, 1000);
     camera.position.set(0, 0, 100);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(800, 500);
     container.appendChild(renderer.domElement);
 
     const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
     scene.add(light);
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
@@ -271,6 +292,21 @@
       camera.position.set(0, 0, box.getSize(new THREE.Vector3()).length() * 1.2);
       controls.update();
       animate();
+      renderer.domElement.addEventListener('click', (event) => {
+      if (!landmarkMode) return;
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+
+      if (intersects.length > 0) {
+        const point = intersects[0].point;
+        addLandmarkAt(point);
+      }
+    });
     }
 
     if (ext === "stl") {
@@ -302,6 +338,25 @@
     }
   }
   window.onload = loadModelList;
+
+    // ===== Landmark  =====
+  function toggleLandmarkMode() {
+    landmarkMode = !landmarkMode;
+    const btn = document.getElementById('landmarkBtn');
+    btn.textContent = landmarkMode ? "Exit Landmark Mode" : "Enter Landmark Mode";
+    btn.style.backgroundColor = landmarkMode ? "#ffa500" : ""; 
+  }
+
+
+  function addLandmarkAt(position) {
+    const sphereGeometry = new THREE.SphereGeometry(1.5, 16, 16);
+    const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const landmark = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    landmark.position.copy(position);
+    scene.add(landmark);
+    landmarks.push(position);
+  }
+
 </script>
 
 </body>
