@@ -51,8 +51,8 @@
   <h2>Upload a 3D Model</h2>
   <p>Please upload a file in <strong>.stl</strong> or <strong>.obj</strong> format.</p>
 
-  <div class="upload-area">
-    <input type="file" id="modelInput" accept=".stl,.obj">
+  <div class="upload-area" id="dropArea">
+    <input type="file" id="modelInput" accept=".stl,.obj" multiple>
     <button onclick="handleUpload()">Upload</button>
     <p id="filename"></p>
   </div>
