@@ -29,32 +29,34 @@
       font-size: 1.5rem;
       margin: 20px 0 0 30px;
     }
-
+    
     .main-container {
       display: flex;
-      justify-content: center;
       align-items: flex-start;
-      margin-top: 40px;
+      margin: 20px;
       gap: 20px;
     }
+
 
     .viewer-wrapper {
       position: relative;
     }
 
     .viewer-container {
-      width: 800px;
+      width: 950px;
       height: 500px;
       border: 2px solid #ccc;
       background-color: white;
     }
 
     .control-buttons {
+      position: absolute; 
+      right: 20px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      height: 500px;
+      gap: 20px;
     }
+
 
     .control-buttons button {
       padding: 10px 20px;
@@ -78,6 +80,29 @@
       border: 2px solid #ccc;
       background-color: #fff;
       font-size: 0.95rem;
+    }
+    
+    .file-list-container.collapsed {
+      width: 0;
+      padding: 0;
+      border: none;
+      overflow: hidden;
+    }
+
+
+    .file-list li.active {
+      /* background-color: #00b8a9;  */
+      color: #00b8a9; 
+    }
+
+    .model-filename.active {
+      color: #00b8a9;
+      font-weight: bold;
+    }
+
+ 
+    .viewer-container.expanded {
+      width: calc(950px + 200px);
     }
 
     .file-list {
@@ -141,6 +166,27 @@
       background-color: var(--file-list-bg);
       color: var(--text-color);
     }
+    .filename-header {
+      display: flex;
+      align-items: center; /* 垂直居中 */
+      gap: 10px;           /* 控制按钮和文字的间距 */
+      padding: 10px;
+    }
+    .hamburger {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      margin-top: -1px;
+    }
+
+    .model-filename {
+      font-weight: bold;
+      font-size: 1rem;
+      color: var(--text-color);
+      position: absolute;
+      left: 5%;
+    }
 
 
   </style>
@@ -183,22 +229,23 @@
     </div>
   </div>
 </nav>
-
 <div class="sidebar">View</div>
-
 <!-- Main section -->
-<!-- <div class="main-container">
-  <div class="viewer-wrapper">
-    <div class="viewer-container" id="viewerContainer">
-      Loading...
-    </div>
-  </div> -->
+
+<!-- hamburger button -->
+  <!-- <button class="hamburger" id="hamburgerBtn">☰</button> -->
+  <!-- <div id="modelFilename" class="model-filename">No model loaded</div> -->
+  <div class="filename-header">
+    <button class="hamburger" id="hamburgerBtn">☰</button>
+    <div id="modelFilename" class="model-filename">No model loaded</div>
+  </div>
+  
   <div class="main-container">
     <div class="file-list-container" id="fileListContainer">
       <ul class="file-list" id="fileList">
        
-        <li>example1.stl</li>
-        <li>example2.obj</li>
+        <li>test1.stl</li>
+        <li>test2.obj</li>
         <li>long_filename_model_3.obj</li>
         
       </ul>
@@ -278,8 +325,18 @@
 
   function loadModel(filename) {
     currentFilename = filename;
+    document.getElementById("modelFilename").textContent = filename;
     const container = document.getElementById("viewerContainer");
     container.innerHTML = ""; 
+
+    // loaded file name active status control
+    modelFilenameDiv.classList.add('active');
+    const lis = document.querySelectorAll("#fileList li");
+    lis.forEach(li => li.classList.remove("active"));
+    const selectedLi = Array.from(lis).find(li => li.textContent === filename);
+    if (selectedLi) {
+      selectedLi.classList.add("active");
+    }
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, 800 / 500, 0.1, 1000);
@@ -367,6 +424,16 @@
   }
 
   window.onload = loadModelList;
+
+
+  document.getElementById("hamburgerBtn").addEventListener("click", () => {
+    const fileListContainer = document.getElementById("fileListContainer");
+    const viewer = document.getElementById("viewerContainer");
+
+    fileListContainer.classList.toggle("collapsed");
+    viewer.classList.toggle("expanded");
+  });
+
 
   function toggleLandmarkMode() {
     landmarkMode = !landmarkMode;
@@ -538,3 +605,7 @@
 
 
 </script>
+
+
+</body>
+</html>
