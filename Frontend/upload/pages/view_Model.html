@@ -20,6 +20,8 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       transition: background-color 0.3s ease, color 0.3s ease;
+      overflow: auto; 
+      height: 100vh;
     }
 
     .sidebar {
@@ -29,27 +31,49 @@
       font-size: 1.5rem;
       margin: 20px 0 0 30px;
     }
-    
+    .main-wrapper {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      overflow-x: auto;
+      gap: 20px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .main-wrapper > div {
+      flex-shrink: 0;
+      box-sizing: border-box;
+      min-width: 200px;
+    }
+
     .main-container {
       display: flex;
+      flex-direction: column;
       align-items: flex-start;
-      margin: 20px;
-      gap: 20px;
+      justify-content: flex-start;
+      box-sizing: border-box;
     }
 
 
     .viewer-wrapper {
       position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .viewer-container {
-      width: 950px;
-      height: 500px;
+      width: var(--viewer-width);
+      height: var(--viewer-height);
       border: 2px solid #ccc;
       background-color: white;
+      transition: transform 0.3s ease;
+      transform-origin: left top;
     }
     .landmark-list-container {
-      width: 800px;
+      width: var(--viewer-width);
+      height: var(--viewer-height);
       background-color: var(--file-list-bg);
       color: var(--text-color);
       border: 2px solid var(--border-color);
@@ -71,7 +95,6 @@
       word-break: break-word;
     }
     .control-buttons {
-      position: absolute; 
       right: 20px;
       display: flex;
       flex-direction: column;
@@ -104,10 +127,7 @@
     }
     
     .file-list-container.collapsed {
-      width: 0;
-      padding: 0;
-      border: none;
-      overflow: hidden;
+      display:none;
     }
 
 
@@ -122,8 +142,17 @@
     }
 
  
+    /* .viewer-wrapper.expanded {
+      transform: scale(1.4);
+      transform-origin: top left;
+    } */
     .viewer-container.expanded {
-      width: calc(950px + 200px);
+      transform: scale(1.5);
+      margin-left: 50px;
+    }
+
+    .viewer-container.expanded ~ .landmark-list-container {
+      display: none;
     }
 
     .file-list {
@@ -260,33 +289,52 @@
     <button class="hamburger" id="hamburgerBtn">☰</button>
     <div id="modelFilename" class="model-filename">No model loaded</div>
   </div>
-  
-  <div class="main-container">
+  <div class="main-wrapper">
     <div class="file-list-container" id="fileListContainer">
       <ul class="file-list" id="fileList">
-       
+        
         <li>test1.stl</li>
         <li>test2.obj</li>
         <li>long_filename_model_3.obj</li>
         
       </ul>
     </div>
-  
-    <div class="viewer-wrapper">
-      <div class="viewer-container" id="viewerContainer">
-        Loading...
+    <div class="main-container">
+      <!-- <div class="file-list-container" id="fileListContainer">
+        <ul class="file-list" id="fileList">
+        
+          <li>test1.stl</li>
+          <li>test2.obj</li>
+          <li>long_filename_model_3.obj</li>
+          
+        </ul>
+      </div> -->
+    
+      <div class="viewer-wrapper">
+        <div class="viewer-container" id="viewerContainer">
+          Loading...
+        </div>
+        <div class="landmark-list-container" id="landmarkListContainer">
+          <h3>Landmarks</h3>
+          <ul id="landmarkList"></ul>
+        </div>
       </div>
-      <div class="landmark-list-container" id="landmarkListContainer">
-        <h3>Landmarks</h3>
-        <ul id="landmarkList"></ul>
-      </div>
-    </div>
 
+    <!-- <div class="control-buttons">
+      <div class="top-buttons">
+      </div>
+      <div class="top-buttons">
+        <button onclick="toggleLandmarkMode()" id="landmarkBtn">Enter Landmark Mode</button>
+      </div>
+      <div class="top-buttons">
+        <button onclick="toggleDeleteMode()" id="deleteBtn">Enter Delete Mode</button>
+      </div> -->
+      <button class="bottom-button" onclick="deleteCurrentModel()">Delete Current Model</button>
+      <button class="bottom-button" onclick="exportOBJ()">Save as OBJ</button>
+      <button class="bottom-button" onclick="exportSTL()">Save as STL</button>
+  </div>
   <div class="control-buttons">
     <div class="top-buttons">
-      <!-- <button onclick="alert('Use mouse to rotate')">Rotate</button>
-      <button onclick="alert('Scroll to zoom')">Zoom</button>
-      <button onclick="alert('Right-click to pan')">Pan</button> -->
     </div>
     <div class="top-buttons">
       <button onclick="toggleLandmarkMode()" id="landmarkBtn">Enter Landmark Mode</button>
@@ -294,12 +342,7 @@
     <div class="top-buttons">
       <button onclick="toggleDeleteMode()" id="deleteBtn">Enter Delete Mode</button>
     </div>
-
-
-    <button class="bottom-button" onclick="exportOBJ()">Save as OBJ</button>
-    <button class="bottom-button" onclick="exportSTL()">Save as STL</button>
-    <button class="bottom-button" onclick="deleteCurrentModel()">Delete Current Model</button>
-
+  </div>
 </div>
 
 <!-- Overlay for closing dropdown -->
