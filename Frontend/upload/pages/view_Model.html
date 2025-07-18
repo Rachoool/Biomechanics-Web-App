@@ -349,6 +349,7 @@
 
   function loadModel(filename) {
     currentFilename = filename;
+    const modelFilenameDiv = document.getElementById("modelFilename");
     document.getElementById("modelFilename").textContent = filename;
     const container = document.getElementById("viewerContainer");
     container.innerHTML = ""; 
