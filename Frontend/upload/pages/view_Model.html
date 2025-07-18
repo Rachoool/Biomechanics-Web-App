@@ -150,6 +150,9 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/loaders/STLLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/loaders/OBJLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/exporters/STLExporter.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/exporters/OBJExporter.js"></script>
+
 </head>
 <body>
 
@@ -217,9 +220,15 @@
     <div class="top-buttons">
       <button onclick="toggleLandmarkMode()" id="landmarkBtn">Enter Landmark Mode</button>
     </div>
+    <div class="top-buttons">
+      <button onclick="toggleDeleteMode()" id="deleteBtn">Enter Delete Mode</button>
+    </div>
 
-    <button class="bottom-button" onclick="alert('Save feature not implemented')">Save</button>
-  </div>
+
+    <button class="bottom-button" onclick="exportOBJ()">Save as OBJ</button>
+    <button class="bottom-button" onclick="exportSTL()">Save as STL</button>
+    <button class="bottom-button" onclick="deleteCurrentModel()">Delete Current Model</button>
+
 </div>
 
 <!-- Overlay for closing dropdown -->
@@ -228,7 +237,10 @@
 <script>
   let renderer, camera, scene, controls;
   let landmarkMode = false;
+  let deleteMode = false;
   const landmarks = [];
+  const landmarkData = new Map(); // 存储 landmark 与名称及文字Sprite
+
   const mouse = new THREE.Vector2();
   const raycaster = new THREE.Raycaster();
 
@@ -262,7 +274,10 @@
     }
   }
 
+  let currentFilename = null; 
+
   function loadModel(filename) {
+    currentFilename = filename;
     const container = document.getElementById("viewerContainer");
     container.innerHTML = ""; 
 
@@ -292,21 +307,34 @@
       camera.position.set(0, 0, box.getSize(new THREE.Vector3()).length() * 1.2);
       controls.update();
       animate();
+
       renderer.domElement.addEventListener('click', (event) => {
-      if (!landmarkMode) return;
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-      const rect = renderer.domElement.getBoundingClientRect();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(scene.children, true);
 
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(scene.children, true);
+        if (intersects.length > 0) {
+          const target = intersects[0].object;
 
-      if (intersects.length > 0) {
-        const point = intersects[0].point;
-        addLandmarkAt(point);
-      }
-    });
+          if (landmarkMode) {
+            const point = intersects[0].point;
+            addLandmarkAt(point);
+          } else if (deleteMode && target.geometry?.type === "SphereGeometry") {
+            scene.remove(target);
+
+            // 删除文字 sprite
+            const info = landmarkData.get(target);
+            if (info && info.label) {
+              scene.remove(info.label);
+            }
+            landmarkData.delete(target);
+            renderer.render(scene, camera);
+          }
+        }
+      });
     }
 
     if (ext === "stl") {
@@ -337,9 +365,9 @@
       renderer.render(scene, camera);
     }
   }
+
   window.onload = loadModelList;
 
-    // ===== Landmark  =====
   function toggleLandmarkMode() {
     landmarkMode = !landmarkMode;
     const btn = document.getElementById('landmarkBtn');
@@ -347,17 +375,166 @@
     btn.style.backgroundColor = landmarkMode ? "#ffa500" : ""; 
   }
 
+  function toggleDeleteMode() {
+    deleteMode = !deleteMode;
+    const btn = document.getElementById('deleteBtn');
+    btn.textContent = deleteMode ? "Exit Delete Mode" : "Enter Delete Mode";
+    btn.style.backgroundColor = deleteMode ? "#ff5555" : "";
+
+    if (deleteMode && landmarkMode) {
+      toggleLandmarkMode(); 
+    }
+  }
 
   function addLandmarkAt(position) {
+    const name = prompt("Enter a name for this landmark:");
+    if (!name) return;
+
     const sphereGeometry = new THREE.SphereGeometry(1.5, 16, 16);
     const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
     const landmark = new THREE.Mesh(sphereGeometry, sphereMaterial);
     landmark.position.copy(position);
     scene.add(landmark);
-    landmarks.push(position);
+    landmarks.push(landmark);
+
+    const label = createTextLabel(name);
+    label.position.copy(position); 
+    scene.add(label);
+
+    landmarkData.set(landmark, { name, label });
   }
 
-</script>
+  function createTextLabel(text) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
 
-</body>
-</html>
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = 'bold 48px Arial';
+    ctx.fillStyle = 'rgba(255, 255, 0, 1)';  
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.needsUpdate = true;
+
+    const spriteMaterial = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false });
+    const sprite = new THREE.Sprite(spriteMaterial);
+    sprite.scale.set(15, 7.5, 1);  // 可以适当调整大小
+
+    return sprite;
+}
+
+  function exportSTL() {
+    const filename = prompt("Enter filename (without extension):");
+    if (!filename) return;
+
+    const exporter = new THREE.STLExporter();
+    const sceneToExport = new THREE.Scene();
+
+    scene.children.forEach(obj => {
+      if (obj.isMesh || obj.geometry?.type === "SphereGeometry") {
+        sceneToExport.add(obj.clone());
+      }
+    });
+
+    const result = exporter.parse(sceneToExport);
+    const blob = new Blob([result], { type: 'text/plain' });
+    const formData = new FormData();
+    const fullFilename = filename + ".stl";
+    formData.append('file', blob, fullFilename);
+
+    fetch('http://localhost:5000/api/upload', {
+      method: 'POST',
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert('STL file saved to server.');
+          loadModelList(); 
+        } else {
+          alert('Failed to save STL file.');
+        }
+      })
+      .catch(err => {
+        console.error('Upload failed:', err);
+        alert('Failed to upload STL file.');
+      });
+  }
+
+
+  function exportOBJ() {
+    const filename = prompt("Enter filename (without extension):");
+    if (!filename) return;
+
+    const exporter = new THREE.OBJExporter();
+    const sceneToExport = new THREE.Scene();
+
+    scene.children.forEach(obj => {
+      if (obj.isMesh || obj.geometry?.type === "SphereGeometry") {
+        sceneToExport.add(obj.clone());
+      }
+    });
+
+    const result = exporter.parse(sceneToExport);
+    const blob = new Blob([result], { type: 'text/plain' });
+    const formData = new FormData();
+    const fullFilename = filename + ".obj";
+    formData.append('file', blob, fullFilename);
+
+    fetch('http://localhost:5000/api/upload', {
+      method: 'POST',
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert('OBJ file saved to server.');
+          loadModelList(); 
+        } else {
+          alert('Failed to save OBJ file.');
+        }
+      })
+      .catch(err => {
+        console.error('Upload failed:', err);
+        alert('Failed to upload OBJ file.');
+      });
+  }
+
+
+  function deleteCurrentModel() {
+    if (!currentFilename) {
+      alert("No model is currently loaded.");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete "${currentFilename}"?`)) return;
+
+    fetch(`http://localhost:5000/api/delete/${currentFilename}`, {
+      method: "DELETE"
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          alert(`Model "${currentFilename}" deleted.`);
+          currentFilename = null;
+          const container = document.getElementById("viewerContainer");
+          container.innerHTML = "No model loaded.";
+          loadModelList();  
+        } else {
+          alert("Delete failed: " + data.message);
+        }
+      })
+      .catch(err => {
+        console.error("Delete request error:", err);
+        alert("Request failed.");
+      });
+  }
+
+
+
+</script>

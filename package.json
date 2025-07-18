@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@itk-wasm/image-io": "^1.6.0",
+    "@kitware/vtk.js": "^34.5.0"
+  }
+}

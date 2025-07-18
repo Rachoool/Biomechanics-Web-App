@@ -14,7 +14,10 @@
 
   <!-- vtk.js and itk.js -->
   <script src="https://unpkg.com/vtk.js"></script>
-  <script src="https://unpkg.com/itk@15.0.0/itk.min.js"></script>
+  
+ 
+  <script src="https://unpkg.com/itk@14.1.1/dist/itk.min.js"></script>
+
 </head>
 <body>
 
@@ -93,7 +96,7 @@
     modelView.textContent = "";
 
     const vtk = window.vtk;
-    const fileUrl = `/uploads/${filename}`;
+    const fileUrl = `http://localhost:5000/uploads/${filename}`;
 
     // Setup vtk rendering
     const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
@@ -114,7 +117,9 @@
     fetch(fileUrl)
       .then(response => response.arrayBuffer())
       .then(buffer => {
-        return window.itk.readImageArrayBuffer(null, buffer);
+        const itk = window.itk || window.itkjs || {};
+        if (!itk.readImageArrayBuffer) throw new Error("itk.js not loaded properly.");
+        return itk.readImageArrayBuffer(null, buffer);
       })
       .then(({ image, webWorker }) => {
         webWorker.terminate();
