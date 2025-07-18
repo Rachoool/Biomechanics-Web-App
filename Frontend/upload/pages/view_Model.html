@@ -48,7 +48,28 @@
       border: 2px solid #ccc;
       background-color: white;
     }
-
+    .landmark-list-container {
+      width: 800px;
+      background-color: var(--file-list-bg);
+      color: var(--text-color);
+      border: 2px solid var(--border-color);
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+    .landmark-list-container h3 {
+      margin: 5px 5px 10px 10px;
+      font-size: 1.1rem;
+    }
+    #landmarkList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #landmarkList li {
+      border-bottom: 1px solid var(--border-color);
+      padding: 6px 8px;
+      word-break: break-word;
+    }
     .control-buttons {
       position: absolute; 
       right: 20px;
@@ -255,8 +276,11 @@
       <div class="viewer-container" id="viewerContainer">
         Loading...
       </div>
+      <div class="landmark-list-container" id="landmarkListContainer">
+        <h3>Landmarks</h3>
+        <ul id="landmarkList"></ul>
+      </div>
     </div>
-  
 
   <div class="control-buttons">
     <div class="top-buttons">
@@ -384,10 +408,21 @@
 
             // 删除文字 sprite
             const info = landmarkData.get(target);
-            if (info && info.label) {
-              scene.remove(info.label);
+            if (info){
+              if (info.label){
+                scene.remove(info.label);
+              }
+
+              const landmarkList = document.getElementById("landmarkList");
+              const items = landmarkList.getElementsByTagName("li");
+              for (let i = 0; i < items.length; i++) {
+                if (items[i].textContent.startsWith(info.name + " ")) {
+                  landmarkList.removeChild(items[i]);
+                  break;
+                }
+              }
+              landmarkData.delete(target);
             }
-            landmarkData.delete(target);
             renderer.render(scene, camera);
           }
         }
@@ -452,11 +487,18 @@
       toggleLandmarkMode(); 
     }
   }
+  const landmarkInfoList = []; 
 
   function addLandmarkAt(position) {
     const name = prompt("Enter a name for this landmark:");
     if (!name) return;
 
+    for (let existing of landmarkData.values()){
+      if (existing.name === name){
+        alert("Error: A landmark with this name already exists.");
+        return;
+      }
+    }
     const sphereGeometry = new THREE.SphereGeometry(1.5, 16, 16);
     const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
     const landmark = new THREE.Mesh(sphereGeometry, sphereMaterial);
@@ -469,6 +511,18 @@
     scene.add(label);
 
     landmarkData.set(landmark, { name, label });
+    landmarkInfoList.push(
+      {
+        name,
+        position: position.clone()
+      }
+    );
+    const landmarkList = document.getElementById("landmarkList");
+    const li = document.createElement("li");
+    li.textContent = `${name} (${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)})`;
+    landmarkList.appendChild(li);
+
+    console.log("Landmark added:", name, position);
   }
 
   function createTextLabel(text) {
