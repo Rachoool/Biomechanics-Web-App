@@ -19,7 +19,7 @@
 [data-theme="dark"] {
   --bg-color: #1a1a1a;
   --text-color: #ffffff;
-  --nav-bg: #2d2d2d;
+  --nav-bg: #0eb2a4;
   --nav-text: #ffffff;
   --box-bg: #2d2d2d;
   --box-border: #555;
@@ -298,4 +298,34 @@ select {
   color: #00b8a9;
   font-weight: 500;
   font-size: 0.95rem;
+}
+
+
+.breadcrumb {
+  background-color: var(--bg-color);
+  padding: 1rem 2rem;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
+.breadcrumb a {
+  text-decoration: none;
+  color: var(--nav-bg);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+  color: var(--button-hover-bg);
+}
+
+.breadcrumb .separator {
+  margin: 0 0.4rem;
+  color: var(--text-color);
+}
+
+.breadcrumb .current {
+  font-weight: bold;
+  color: var(--text-color);
 }

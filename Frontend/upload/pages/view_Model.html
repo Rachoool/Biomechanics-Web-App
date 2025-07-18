@@ -20,7 +20,7 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       transition: background-color 0.3s ease, color 0.3s ease;
-      overflow: auto; 
+      overflow: auto;
       height: 100vh;
     }
 
@@ -125,7 +125,7 @@
       background-color: #fff;
       font-size: 0.95rem;
     }
-    
+
     .file-list-container.collapsed {
       display:none;
     }
@@ -133,7 +133,7 @@
 
     .file-list li.active {
       /* background-color: #00b8a9;  */
-      color: #00b8a9; 
+      color: #00b8a9;
     }
 
     .model-filename.active {
@@ -141,7 +141,7 @@
       font-weight: bold;
     }
 
- 
+
     /* .viewer-wrapper.expanded {
       transform: scale(1.4);
       transform-origin: top left;
@@ -279,6 +279,10 @@
     </div>
   </div>
 </nav>
+
+<!-- breadcrumb nav -->
+<nav class="breadcrumb" id="breadcrumbNav"></nav>
+
 <div class="sidebar">View</div>
 <!-- Main section -->
 
@@ -292,24 +296,24 @@
   <div class="main-wrapper">
     <div class="file-list-container" id="fileListContainer">
       <ul class="file-list" id="fileList">
-        
+
         <li>test1.stl</li>
         <li>test2.obj</li>
         <li>long_filename_model_3.obj</li>
-        
+
       </ul>
     </div>
     <div class="main-container">
       <!-- <div class="file-list-container" id="fileListContainer">
         <ul class="file-list" id="fileList">
-        
+
           <li>test1.stl</li>
           <li>test2.obj</li>
           <li>long_filename_model_3.obj</li>
-          
+
         </ul>
       </div> -->
-    
+
       <div class="viewer-wrapper">
         <div class="viewer-container" id="viewerContainer">
           Loading...
@@ -366,7 +370,7 @@
   async function loadModelList() {
     try {
       const res = await fetch("http://localhost:5000/api/models");
-      const data = await res.json(); 
+      const data = await res.json();
 
       const fileList = document.getElementById("fileList");
       fileList.innerHTML = "";
@@ -388,14 +392,14 @@
     }
   }
 
-  let currentFilename = null; 
+  let currentFilename = null;
 
   function loadModel(filename) {
     currentFilename = filename;
     const modelFilenameDiv = document.getElementById("modelFilename");
     document.getElementById("modelFilename").textContent = filename;
     const container = document.getElementById("viewerContainer");
-    container.innerHTML = ""; 
+    container.innerHTML = "";
 
     // loaded file name active status control
     modelFilenameDiv.classList.add('active');
@@ -518,7 +522,7 @@
     landmarkMode = !landmarkMode;
     const btn = document.getElementById('landmarkBtn');
     btn.textContent = landmarkMode ? "Exit Landmark Mode" : "Enter Landmark Mode";
-    btn.style.backgroundColor = landmarkMode ? "#ffa500" : ""; 
+    btn.style.backgroundColor = landmarkMode ? "#ffa500" : "";
   }
 
   function toggleDeleteMode() {
@@ -528,10 +532,10 @@
     btn.style.backgroundColor = deleteMode ? "#ff5555" : "";
 
     if (deleteMode && landmarkMode) {
-      toggleLandmarkMode(); 
+      toggleLandmarkMode();
     }
   }
-  const landmarkInfoList = []; 
+  const landmarkInfoList = [];
 
   function addLandmarkAt(position) {
     const name = prompt("Enter a name for this landmark:");
@@ -551,7 +555,7 @@
     landmarks.push(landmark);
 
     const label = createTextLabel(name);
-    label.position.copy(position); 
+    label.position.copy(position);
     scene.add(label);
 
     landmarkData.set(landmark, { name, label });
@@ -577,7 +581,7 @@
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.font = 'bold 48px Arial';
-    ctx.fillStyle = 'rgba(255, 255, 0, 1)';  
+    ctx.fillStyle = 'rgba(255, 255, 0, 1)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -620,7 +624,7 @@
       .then(data => {
         if (data.status === 'success') {
           alert('STL file saved to server.');
-          loadModelList(); 
+          loadModelList();
         } else {
           alert('Failed to save STL file.');
         }
@@ -659,7 +663,7 @@
       .then(data => {
         if (data.status === 'success') {
           alert('OBJ file saved to server.');
-          loadModelList(); 
+          loadModelList();
         } else {
           alert('Failed to save OBJ file.');
         }
@@ -689,7 +693,7 @@
           currentFilename = null;
           const container = document.getElementById("viewerContainer");
           container.innerHTML = "No model loaded.";
-          loadModelList();  
+          loadModelList();
         } else {
           alert("Delete failed: " + data.message);
         }
@@ -699,6 +703,39 @@
         alert("Request failed.");
       });
   }
+
+
+  <!-- breadcrumb nav-->
+  function getQueryParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+  }
+
+  function buildBreadcrumb() {
+    const from = getQueryParam('from');
+    const nav = document.getElementById('breadcrumbNav');
+
+    let uploadHref = 'upload.html';
+    let uploadLabel = 'Upload';
+
+    if (from === 'medical') {
+      uploadHref = 'upload_Medical_Image.html';
+      uploadLabel = 'Upload Medical Image';
+    } else if (from === '3d') {
+      uploadHref = 'upload_3DModel.html';
+      uploadLabel = 'Upload 3D Model';
+    }
+
+    nav.innerHTML = `
+    <a href="index.html">Home</a>
+    <span class="separator">›</span>
+    <a href="${uploadHref}">${uploadLabel}</a>
+    <span class="separator">›</span>
+    <span class="current">View</span>
+  `;
+  }
+
+  window.addEventListener('DOMContentLoaded', buildBreadcrumb);
 
 
 
