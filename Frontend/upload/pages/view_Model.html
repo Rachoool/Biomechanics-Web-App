@@ -426,6 +426,12 @@
     const name = prompt("Enter a name for this landmark:");
     if (!name) return;
 
+    for (let existing of landmarkData.values()){
+      if (existing.name === name){
+        alert("Error: A landmark with this name already exists.");
+        return;
+      }
+    }
     const sphereGeometry = new THREE.SphereGeometry(1.5, 16, 16);
     const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
     const landmark = new THREE.Mesh(sphereGeometry, sphereMaterial);
