@@ -218,8 +218,8 @@
     }
     .filename-header {
       display: flex;
-      align-items: center; /* 垂直居中 */
-      gap: 10px;           /* 控制按钮和文字的间距 */
+      align-items: center; 
+      gap: 10px;           
       padding: 10px;
     }
     .hamburger {
@@ -357,7 +357,7 @@
   let landmarkMode = false;
   let deleteMode = false;
   const landmarks = [];
-  const landmarkData = new Map(); // 存储 landmark 与名称及文字Sprite
+  const landmarkData = new Map(); // save landmark 
 
   const mouse = new THREE.Vector2();
   const raycaster = new THREE.Raycaster();
@@ -378,7 +378,13 @@
       data.models.forEach(file => {
         const li = document.createElement("li");
         li.textContent = file;
-        li.onclick = () => loadModel(file);
+        li.onclick = () => {
+          const url = new URL(window.location);
+          url.searchParams.set('file', file);
+          window.history.pushState({}, '', url);
+
+          loadModel(file);
+        };
         fileList.appendChild(li);
       });
 
@@ -454,7 +460,6 @@
           } else if (deleteMode && target.geometry?.type === "SphereGeometry") {
             scene.remove(target);
 
-            // 删除文字 sprite
             const info = landmarkData.get(target);
             if (info){
               if (info.label){
@@ -598,7 +603,7 @@
 
     const spriteMaterial = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false });
     const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(15, 7.5, 1);  // 可以适当调整大小
+    sprite.scale.set(15, 7.5, 1);  
 
     return sprite;
 }
@@ -606,6 +611,18 @@
   function exportSTL() {
     const filename = prompt("Enter filename (without extension):");
     if (!filename) return;
+
+    // Check if original file is .obj
+    const urlParams = new URLSearchParams(window.location.search);
+    const originalFile = urlParams.get('file') || '';
+    if (originalFile.toLowerCase().endsWith('.obj')) {
+      const proceed = confirm(
+        "⚠️ Warning: The current model was originally loaded from an OBJ file.\n\n" +
+        "Saving it as an STL file may result in data loss or structural issues, which can lead to loading errors.\n\n" +
+        "Do you still want to proceed with saving as STL?"
+      );
+      if (!proceed) return;
+    }
 
     const exporter = new THREE.STLExporter();
     const sceneToExport = new THREE.Scene();
@@ -620,7 +637,7 @@
     const blob = new Blob([result], { type: 'text/plain' });
     const formData = new FormData();
     const fullFilename = filename + ".stl";
-    formData.append('file', blob, fullFilename);
+    formData.append('files', blob, fullFilename);
 
     fetch('http://localhost:5000/api/upload', {
       method: 'POST',
@@ -659,7 +676,7 @@
     const blob = new Blob([result], { type: 'text/plain' });
     const formData = new FormData();
     const fullFilename = filename + ".obj";
-    formData.append('file', blob, fullFilename);
+    formData.append('files', blob, fullFilename);
 
     fetch('http://localhost:5000/api/upload', {
       method: 'POST',
