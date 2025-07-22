@@ -68,46 +68,49 @@
 
 <script>
   function handleUpload() {
-  const fileInput = document.getElementById('modelInput');
-  const file = fileInput.files[0];
-  const display = document.getElementById('filename');
+    const fileInput = document.getElementById('modelInput');
+    const files = fileInput.files;
+    const display = document.getElementById('filename');
 
-  if (!file) {
-    alert("Please select a file.");
-    return;
-  }
+    if (files.length === 0) {
+      alert("Please select at least one file.");
+      return;
+    }
 
-  const allowedTypes = ['.stl', '.obj'];
-  const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+    const allowedTypes = ['.stl', '.obj'];
+    const formData = new FormData();
+    let validFiles = [];
 
-  if (!allowedTypes.includes(extension)) {
-    alert("Invalid file type. Please upload .stl or .obj.");
-    return;
-  }
-
-  display.textContent = "Uploaded: " + file.name;
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  fetch("http://127.0.0.1:5000/api/upload", {
-    method: "POST",
-    body: formData,
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === "success") {
-        // 跳转到模型查看页面并传入文件名
-        window.location.href = `view_model.html?file=${encodeURIComponent(data.filename)}`;
-      } else {
-        alert("Upload failed: " + data.message);
+    for (let file of files) {
+      const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedTypes.includes(extension)) {
+        alert("Invalid file type: " + file.name);
+        return;
       }
+      formData.append("files", file);  
+      validFiles.push(file.name);
+    }
+
+    display.textContent = "Uploading: " + validFiles.join(", ");
+
+    fetch("http://127.0.0.1:5000/api/upload", {
+      method: "POST",
+      body: formData,
     })
-    .catch(err => {
-      console.error(err);
-      alert("Upload error");
-    });
-}
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          alert("Upload successful!");
+          window.location.href = `view_model.html?file=${encodeURIComponent(validFiles[0])}`;
+        } else {
+          alert("Upload failed: " + data.message);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Upload error");
+      });
+  }
 
 </script>
 

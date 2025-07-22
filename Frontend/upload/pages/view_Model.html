@@ -523,6 +523,12 @@
     const btn = document.getElementById('landmarkBtn');
     btn.textContent = landmarkMode ? "Exit Landmark Mode" : "Enter Landmark Mode";
     btn.style.backgroundColor = landmarkMode ? "#ffa500" : "";
+    if (landmarkMode && deleteMode) {
+      deleteMode = false;
+      const delBtn = document.getElementById('deleteBtn');
+      delBtn.textContent = "Enter Delete Mode";
+      delBtn.style.backgroundColor = "";
+    }
   }
 
   function toggleDeleteMode() {
@@ -715,7 +721,7 @@
     const from = getQueryParam('from');
     const nav = document.getElementById('breadcrumbNav');
 
-    let uploadHref = 'upload.html';
+    let uploadHref = 'upload_3Dmodel.html';
     let uploadLabel = 'Upload';
 
     if (from === 'medical') {

@@ -18,22 +18,32 @@ def hello():
 
 @app.route('/api/upload', methods=["POST"])
 def upload_file():
-    file = request.files.get("file")
-    ext = os.path.splitext(file.filename)[1].lower()
-    if file and ext in ALLOWED_EXTENSIONS:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filepath)
-        if ext in ['.dcm', '.nii']:
-            try:
-                import SimpleITK as sitk
-                img = sitk.ReadImage(filepath)
-                vti_path = os.path.splitext(filepath)[0] + '.vti'
-                sitk.WriteImage(img, vti_path)
-                print(f"Converted to {vti_path}")
-            except Exception as e:
-                print(f"Failed to convert: {e}")
-        return jsonify({"status": "success", "filename": file.filename})
-    return jsonify({"status": "error", "message": "Invalid file"}), 400
+    uploaded_files = request.files.getlist("files")  
+    saved_filenames = []
+
+    for file in uploaded_files:
+        if file:
+            ext = os.path.splitext(file.filename)[1].lower()
+            if ext in ALLOWED_EXTENSIONS:
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+                file.save(filepath)
+                saved_filenames.append(file.filename)
+
+                if ext in ['.dcm', '.nii']:
+                    try:
+                        import SimpleITK as sitk
+                        img = sitk.ReadImage(filepath)
+                        vti_path = os.path.splitext(filepath)[0] + '.vti'
+                        sitk.WriteImage(img, vti_path)
+                        print(f"Converted to {vti_path}")
+                    except Exception as e:
+                        print(f"Failed to convert: {e}")
+
+    if saved_filenames:
+        return jsonify({"status": "success", "filenames": saved_filenames})
+    else:
+        return jsonify({"status": "error", "message": "No valid files uploaded"}), 400
+
 
 @app.route('/uploads/<path:filename>')
 def serve_uploaded_file(filename):
