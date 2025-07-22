@@ -379,6 +379,20 @@
         const li = document.createElement("li");
         li.textContent = file;
         li.onclick = () => {
+          if (currentFilename === file) return;
+          const hasLandmarks = landmarkData.size > 0;
+
+          if (hasLandmarks) {
+            const confirmed = confirm(
+              "⚠️ You are about to switch models.\n\n" +
+              "All unsaved landmark annotations will be lost.\n\n" +
+              "Do you wish to proceed?"
+            );
+            if (!confirmed) return;
+          }
+
+          clearLandmarks();
+
           const url = new URL(window.location);
           url.searchParams.set('file', file);
           window.history.pushState({}, '', url);
@@ -760,6 +774,18 @@
 
   window.addEventListener('DOMContentLoaded', buildBreadcrumb);
 
+  function clearLandmarks() {
+    for (const [obj, info] of landmarkData.entries()) {
+      scene.remove(obj);
+      if (info.label) scene.remove(info.label);
+    }
+
+    landmarkData.clear();
+    landmarkInfoList.length = 0;
+
+    const landmarkList = document.getElementById("landmarkList");
+    landmarkList.innerHTML = "";
+  }
 
 
 </script>
