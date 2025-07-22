@@ -346,6 +346,10 @@
     <div class="top-buttons">
       <button onclick="toggleDeleteMode()" id="deleteBtn">Enter Delete Mode</button>
     </div>
+    <div class="top-buttons">
+      <button onclick="startCoordinateSelection()" id="coordBtn">Create Coordinate System</button>
+    </div>
+
   </div>
 </div>
 
@@ -356,6 +360,10 @@
   let renderer, camera, scene, controls;
   let landmarkMode = false;
   let deleteMode = false;
+  let coordinateMode = false;
+  let coordinateAxesGroup = null; // THREE.Group，用于添加和移除坐标轴
+  let coordinateOrigin = null;    // 当前原点
+
   const landmarks = [];
   const landmarkData = new Map(); // save landmark 
 
@@ -413,6 +421,7 @@
   }
 
   let currentFilename = null;
+  let coordinateOriginLandmark = null;
 
   function loadModel(filename) {
     currentFilename = filename;
@@ -468,10 +477,53 @@
         if (intersects.length > 0) {
           const target = intersects[0].object;
 
+          if (coordinateMode && landmarkData.has(target)) {
+            coordinateMode = false;
+
+            // 清除旧坐标系
+            if (coordinateAxesGroup) {
+              scene.remove(coordinateAxesGroup);
+              coordinateAxesGroup = null;
+            }
+
+            coordinateOrigin = target.position.clone();
+
+            coordinateOriginLandmark = target;
+
+            // 创建坐标轴
+            coordinateAxesGroup = new THREE.Group();
+
+            const length = 20;
+            const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), coordinateOrigin, length, 0xff0000); // red
+            const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), coordinateOrigin, length, 0x00ff00); // green
+            const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), coordinateOrigin, length, 0x0000ff); // blue
+
+            coordinateAxesGroup.add(arrowX, arrowY, arrowZ);
+            scene.add(coordinateAxesGroup);
+
+            // 更新所有 landmark 的相对坐标
+            const landmarkList = document.getElementById("landmarkList");
+            landmarkList.innerHTML = "";
+
+            for (const [obj, info] of landmarkData.entries()) {
+              const rel = new THREE.Vector3().copy(obj.position).sub(coordinateOrigin);
+              const li = document.createElement("li");
+              li.textContent = `${info.name} (${rel.x.toFixed(1)}, ${rel.y.toFixed(1)}, ${rel.z.toFixed(1)})`;
+              landmarkList.appendChild(li);
+            }
+
+            renderer.render(scene, camera);
+          }
+
+
           if (landmarkMode) {
             const point = intersects[0].point;
             addLandmarkAt(point);
           } else if (deleteMode && target.geometry?.type === "SphereGeometry") {
+            if (target === coordinateOriginLandmark) {
+              alert("❌ This point is the origin of the coordinate system and cannot be deleted.");
+              return;
+            }
             scene.remove(target);
 
             const info = landmarkData.get(target);
@@ -487,6 +539,13 @@
                   landmarkList.removeChild(items[i]);
                   break;
                 }
+              }
+              if (coordinateOrigin && target.position.distanceTo(coordinateOrigin) < 0.001) {
+                if (coordinateAxesGroup) {
+                  scene.remove(coordinateAxesGroup);
+                  coordinateAxesGroup = null;
+                }
+                coordinateOrigin = null;
               }
               landmarkData.delete(target);
             }
@@ -592,7 +651,13 @@
     );
     const landmarkList = document.getElementById("landmarkList");
     const li = document.createElement("li");
-    li.textContent = `${name} (${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)})`;
+    let displayPos = position;
+    if (coordinateOrigin) {
+      displayPos = new THREE.Vector3().copy(position).sub(coordinateOrigin);
+    }
+
+    li.textContent = `${name} (${displayPos.x.toFixed(1)}, ${displayPos.y.toFixed(1)}, ${displayPos.z.toFixed(1)})`;
+
     landmarkList.appendChild(li);
 
     console.log("Landmark added:", name, position);
@@ -785,7 +850,24 @@
 
     const landmarkList = document.getElementById("landmarkList");
     landmarkList.innerHTML = "";
+    if (coordinateAxesGroup) {
+      scene.remove(coordinateAxesGroup);
+      coordinateAxesGroup = null;
+      coordinateOrigin = null;
+      coordinateOriginLandmark = null;
+
+    }
   }
+
+  function startCoordinateSelection() {
+    coordinateMode = true;
+    alert("Click a landmark point to set as origin and create coordinate system.");
+
+    // 同时退出其他模式
+    if (landmarkMode) toggleLandmarkMode();
+    if (deleteMode) toggleDeleteMode();
+  }
+
 
 
 </script>
