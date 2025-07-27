@@ -341,6 +341,9 @@
   </div>
   <div class="control-buttons">
     <div class="top-buttons">
+      <button onclick="setTopView()">Top View (XY)</button>
+      <button onclick="setFrontView()">Front View (XZ)</button>
+      <button onclick="setSideView()">Side View (YZ)</button>
     </div>
     <div class="top-buttons">
       <button onclick="toggleLandmarkMode()" id="landmarkBtn">Enter Landmark Mode</button>
@@ -638,7 +641,7 @@
     }
     if (distanceMode) toggleDistanceMode();
   }
-  
+
   const landmarkInfoList = [];
 
   function addLandmarkAt(position) {
@@ -1023,6 +1026,27 @@
     } else {
       updateDragControls();  
     }
+  }
+
+  function setTopView() {
+    camera.position.set(0, 0, 100);
+    camera.up.set(0, 1, 0);
+    camera.lookAt(0, 0, 0);
+    controls.update();
+  }
+
+  function setFrontView() {
+    camera.position.set(0, 100, 0);
+    camera.up.set(0, 0, -1);
+    camera.lookAt(0, 0, 0);
+    controls.update();
+  }
+
+  function setSideView() {
+    camera.position.set(100, 0, 0);
+    camera.up.set(0, 1, 0);
+    camera.lookAt(0, 0, 0);
+    controls.update();
   }
 
 </script>
