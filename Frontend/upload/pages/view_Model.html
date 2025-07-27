@@ -248,6 +248,7 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/exporters/STLExporter.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/exporters/OBJExporter.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/controls/DragControls.js"></script>
 
 </head>
 <body>
@@ -321,6 +322,7 @@
         <div class="landmark-list-container" id="landmarkListContainer">
           <h3>Landmarks</h3>
           <ul id="landmarkList"></ul>
+          <div id="distanceInfo" style="padding: 10px; font-size: 0.9rem; color: var(--text-color);"></div>
         </div>
       </div>
 
@@ -347,6 +349,12 @@
       <button onclick="toggleDeleteMode()" id="deleteBtn">Enter Delete Mode</button>
     </div>
     <div class="top-buttons">
+      <button class="bottom-button" onclick="toggleDistanceMode()" id="distanceBtn">Measure Distance</button>
+    </div>
+    <div class="top-buttons">
+      <button class="bottom-button" onclick="toggleMoveMode()" id="moveBtn">Enter Move Mode</button>
+    </div>
+    <div class="top-buttons">
       <button onclick="startCoordinateSelection()" id="coordBtn">Create Coordinate System</button>
     </div>
 
@@ -361,8 +369,13 @@
   let landmarkMode = false;
   let deleteMode = false;
   let coordinateMode = false;
-  let coordinateAxesGroup = null; // THREE.Group，用于添加和移除坐标轴
-  let coordinateOrigin = null;    // 当前原点
+  let coordinateAxesGroup = null; // THREE.Group，
+  let coordinateOrigin = null;    
+  let distanceMode = false;
+  let selectedForDistance = [];
+  let dragControls;
+  const draggableLandmarks = []; // all draggable landmarks 
+  let moveMode = false;
 
   const landmarks = [];
   const landmarkData = new Map(); // save landmark 
@@ -480,7 +493,6 @@
           if (coordinateMode && landmarkData.has(target)) {
             coordinateMode = false;
 
-            // 清除旧坐标系
             if (coordinateAxesGroup) {
               scene.remove(coordinateAxesGroup);
               coordinateAxesGroup = null;
@@ -490,7 +502,6 @@
 
             coordinateOriginLandmark = target;
 
-            // 创建坐标轴
             coordinateAxesGroup = new THREE.Group();
 
             const length = 20;
@@ -501,7 +512,7 @@
             coordinateAxesGroup.add(arrowX, arrowY, arrowZ);
             scene.add(coordinateAxesGroup);
 
-            // 更新所有 landmark 的相对坐标
+
             const landmarkList = document.getElementById("landmarkList");
             landmarkList.innerHTML = "";
 
@@ -607,6 +618,10 @@
       delBtn.textContent = "Enter Delete Mode";
       delBtn.style.backgroundColor = "";
     }
+    if (moveMode) {
+      toggleMoveMode();
+    }
+    if (distanceMode) toggleDistanceMode();
   }
 
   function toggleDeleteMode() {
@@ -618,7 +633,12 @@
     if (deleteMode && landmarkMode) {
       toggleLandmarkMode();
     }
+    if (moveMode) {
+      toggleMoveMode();
+    }
+    if (distanceMode) toggleDistanceMode();
   }
+  
   const landmarkInfoList = [];
 
   function addLandmarkAt(position) {
@@ -641,6 +661,8 @@
     const label = createTextLabel(name);
     label.position.copy(position);
     scene.add(label);
+    draggableLandmarks.push(landmark);
+    updateDragControls(); 
 
     landmarkData.set(landmark, { name, label });
     landmarkInfoList.push(
@@ -661,6 +683,24 @@
     landmarkList.appendChild(li);
 
     console.log("Landmark added:", name, position);
+
+    renderer.domElement.addEventListener('click', (event) => {
+    if (!distanceMode) return;
+
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    for (let intersect of intersects) {
+      const obj = intersect.object;
+      if (landmarkData.has(obj)) {
+        handleLandmarkSelection(obj);
+        break;
+      }
+    }
+  });
   }
 
   function createTextLabel(text) {
@@ -863,12 +903,127 @@
     coordinateMode = true;
     alert("Click a landmark point to set as origin and create coordinate system.");
 
-    // 同时退出其他模式
     if (landmarkMode) toggleLandmarkMode();
     if (deleteMode) toggleDeleteMode();
   }
 
+  function toggleDistanceMode() {
+    distanceMode = !distanceMode;
+    selectedForDistance = [];
 
+    const btn = document.getElementById("distanceBtn");
+    btn.textContent = distanceMode ? "Exit Distance Mode" : "Measure Distance";
+    btn.style.backgroundColor = distanceMode ? "#3399ff" : "";
+
+    if (distanceMode) {
+      alert("Distance Mode: Click two landmarks to measure distance.");
+      if (landmarkMode) toggleLandmarkMode();
+      if (deleteMode) toggleDeleteMode();
+      if (moveMode) toggleMoveMode();
+    } else {
+      document.getElementById("distanceInfo").textContent = "";
+    }
+  }
+
+  function handleLandmarkSelection(obj) {
+    if (!distanceMode) return;
+
+    if (!landmarkData.has(obj)) return;
+    if (selectedForDistance.includes(obj)) return;
+
+    selectedForDistance.push(obj);
+    if (selectedForDistance.length > 2) {
+      selectedForDistance.shift(); 
+    }
+
+    if (selectedForDistance.length === 2) {
+      const [a, b] = selectedForDistance;
+      const d = a.position.distanceTo(b.position);
+      const nameA = landmarkData.get(a)?.name || 'A';
+      const nameB = landmarkData.get(b)?.name || 'B';
+
+      document.getElementById("distanceInfo").textContent =
+        `Distance between "${nameA}" and "${nameB}": ${d.toFixed(2)} units`;
+    }
+  }
+
+  function updateDragControls() {
+    if (dragControls) {
+      dragControls.deactivate();
+      dragControls.dispose();
+    }
+
+    if (!moveMode) return; 
+
+    dragControls = new THREE.DragControls(draggableLandmarks, camera, renderer.domElement);
+
+    dragControls.addEventListener('dragstart', function (event) {
+      controls.enabled = false;
+
+      if (landmarkMode) toggleLandmarkMode();
+      if (deleteMode) toggleDeleteMode();
+      if (distanceMode) toggleDistanceMode();
+    });
+
+    dragControls.addEventListener('dragend', function (event) {
+      controls.enabled = true;
+
+      const obj = event.object;
+      const info = landmarkData.get(obj);
+      if (info) {
+        if (info.label) {
+          info.label.position.copy(obj.position);
+        }
+
+        if (obj === coordinateOriginLandmark) {
+          coordinateOrigin = obj.position.clone();
+
+          if (coordinateAxesGroup) {
+            scene.remove(coordinateAxesGroup);
+            coordinateAxesGroup = new THREE.Group();
+            const length = 20;
+            const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), coordinateOrigin, length, 0xff0000);
+            const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), coordinateOrigin, length, 0x00ff00);
+            const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), coordinateOrigin, length, 0x0000ff);
+            coordinateAxesGroup.add(arrowX, arrowY, arrowZ);
+            scene.add(coordinateAxesGroup);
+          }
+        }
+
+        const landmarkList = document.getElementById("landmarkList");
+        landmarkList.innerHTML = "";
+
+        for (const [target, data] of landmarkData.entries()) {
+          const relative = coordinateOrigin
+            ? new THREE.Vector3().copy(target.position).sub(coordinateOrigin)
+            : target.position;
+
+          const li = document.createElement("li");
+          li.textContent = `${data.name} (${relative.x.toFixed(1)}, ${relative.y.toFixed(1)}, ${relative.z.toFixed(1)})`;
+          landmarkList.appendChild(li);
+        }
+
+        renderer.render(scene, camera);
+      }
+    });
+  }
+
+  function toggleMoveMode() {
+    moveMode = !moveMode;
+
+    const btn = document.getElementById("moveBtn");
+    btn.textContent = moveMode ? "Exit Move Mode" : "Enter Move Mode";
+    btn.style.backgroundColor = moveMode ? "#6c6" : "";
+
+    if (moveMode) {
+      if (landmarkMode) toggleLandmarkMode();
+      if (deleteMode) toggleDeleteMode();
+      if (distanceMode) toggleDistanceMode();
+      updateDragControls();  
+    } else {
+      updateDragControls();  
+    }
+  }
 
 </script>
 
