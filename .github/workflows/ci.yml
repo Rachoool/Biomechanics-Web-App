@@ -16,6 +16,11 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install system dependencies for SimpleITK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libglvnd-dev libgl1-mesa-dev libglu1-mesa-dev
+
       - name: Install Python dependencies
         working-directory: Backend
         run: |
@@ -25,7 +30,7 @@ jobs:
       - name: Check Flask & SimpleITK import
         working-directory: Backend
         run: |
-          python -c "import flask; import SimpleITK; print('Flask and SimpleITK successfully imported')"
+          python -c "import flask; import SimpleITK; print('✅ Flask and SimpleITK successfully imported')"
 
   frontend:
     name: Frontend - Dependency Install & Build
