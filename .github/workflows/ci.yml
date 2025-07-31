@@ -1,0 +1,49 @@
+name: CI for Backend & Frontend
+
+on: [push, pull_request]
+
+jobs:
+  backend:
+    name: Backend - Python Setup & SimpleITK Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        working-directory: Backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check Flask & SimpleITK import
+        working-directory: Backend
+        run: |
+          python -c "import flask; import SimpleITK; print('Flask and SimpleITK successfully imported')"
+
+  frontend:
+    name: Frontend - Dependency Install & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        working-directory: Frontend/upload
+        run: npm install
+
+      - name: Build frontend
+        working-directory: Frontend/upload
+        run: npm run build
