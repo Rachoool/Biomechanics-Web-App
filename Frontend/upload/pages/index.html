@@ -10,10 +10,10 @@
 
 <!--  Navigation Bar -->
 <nav class="navbar">
-  <div class="logo"><a href="index.html">BioData Viewer</a></div>
+  <div class="logo"><a href="/upload/pages/index.html">BioData Viewer</a></div>
   <div class="nav-right">
     <ul>
-      <li><a href="index.html" class="nav-button">Home</a></li>
+      <li><a href="/upload/pages/index.html" class="nav-button">Home</a></li>
     </ul>
 
     <!-- Theme Toggle Dropdown -->
@@ -63,9 +63,9 @@
   function goToUpload() {
     const type = document.getElementById('uploadType').value;
     if (type === "model") {
-      window.location.href = "upload_3DModel.html";
+      window.location.href = "/upload/pages/upload_3DModel.html";
     } else if (type === "image") {
-      window.location.href = "upload_Medical_Image.html";
+      window.location.href = "/upload/pages/upload_Medical_Image.html";
     } else {
       alert("Please select a type to upload.");
     }
