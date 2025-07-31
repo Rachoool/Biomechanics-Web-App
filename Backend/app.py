@@ -3,14 +3,22 @@ from flask_cors import CORS
 from flask import abort
 import os
 
-UPLOAD_FOLDER = 'uploads'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 ALLOWED_EXTENSIONS = {'.stl', '.obj', '.dcm', '.nii'}
 
-app = Flask(__name__, static_folder='../Frontend/upload', static_url_path='/upload')
+FRONTEND_DIR = os.path.join(BASE_DIR, 'Frontend', 'upload')
+
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='/upload')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 CORS(app)
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+print("STATIC DIR:", app.static_folder)
+print("Expected index path:", os.path.join(app.static_folder, 'pages', 'view_Model.html'))
+
 
 @app.route("/api/hello")
 def hello():
@@ -63,7 +71,8 @@ def serve_frontend(filename):
 
 @app.route('/')
 def index():
-    return send_from_directory(app.static_folder + '/pages', 'view_model.html')
+    return send_from_directory(os.path.join(app.static_folder, 'pages'), 'index.html')
+
 
 @app.route('/api/delete/<path:filename>', methods=['DELETE'])
 def delete_file(filename):
@@ -77,4 +86,4 @@ def delete_file(filename):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
