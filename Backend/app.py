@@ -27,15 +27,20 @@ def hello():
 @app.route('/api/upload', methods=["POST"])
 def upload_file():
     uploaded_files = request.files.getlist("files")  
+    print(f"[Upload] Received {len(uploaded_files)} file(s).")  
+
     saved_filenames = []
 
     for file in uploaded_files:
         if file:
             ext = os.path.splitext(file.filename)[1].lower()
+            print(f"[Upload] Processing file: {file.filename} with extension: {ext}")  
+
             if ext in ALLOWED_EXTENSIONS:
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
                 file.save(filepath)
                 saved_filenames.append(file.filename)
+                print(f"[Upload] Saved file to: {filepath}")  
 
                 if ext in ['.dcm', '.nii']:
                     try:
@@ -43,13 +48,18 @@ def upload_file():
                         img = sitk.ReadImage(filepath)
                         vti_path = os.path.splitext(filepath)[0] + '.vti'
                         sitk.WriteImage(img, vti_path)
-                        print(f"Converted to {vti_path}")
+                        print(f"[Convert] Successfully converted to: {vti_path}")  
                     except Exception as e:
-                        print(f"Failed to convert: {e}")
+                        print(f"[Error] Conversion failed for {file.filename}: {e}")  
+
+            else:
+                print(f"[Warning] Skipped unsupported file type: {file.filename}")  
 
     if saved_filenames:
+        print(f"[Upload] Upload completed. Files: {saved_filenames}")  
         return jsonify({"status": "success", "filenames": saved_filenames})
     else:
+        print("[Upload] No valid files uploaded.")  
         return jsonify({"status": "error", "message": "No valid files uploaded"}), 400
 
 

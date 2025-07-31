@@ -440,6 +440,7 @@
   let coordinateOriginLandmark = null;
 
   function loadModel(filename) {
+    console.log(`[Model] Loading model file: ${filename}`);
     currentFilename = filename;
     const modelFilenameDiv = document.getElementById("modelFilename");
     document.getElementById("modelFilename").textContent = filename;
