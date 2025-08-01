@@ -57,12 +57,29 @@
 
 
     .viewer-wrapper {
-      position: relative;
+      /* position: relative;
       display: flex;
       flex-direction: column;
+      justify-content: space-between; */
+      /* display: flex; */
+      flex-direction: column;
       justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
     }
-
+    .bottom-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end; 
+    }
+    .bottom-button {
+      /* align-self: flex-end; */
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-left: 50px;
+    }
     .viewer-container {
       width: var(--viewer-width);
       height: var(--viewer-height);
@@ -113,10 +130,15 @@
       flex-direction: column;
       gap: 10px;
     }
-
-    .bottom-button {
-      align-self: flex-end;
+    .split-line {
+      color: #00b8a9;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-top: -5px;
+      margin-bottom: -20px;
     }
+  
     .file-list-container {
       width: 200px;
       height: 500px;
@@ -147,12 +169,23 @@
       transform-origin: top left;
     } */
     .viewer-container.expanded {
-      transform: scale(1.5);
+      transform: scale(1.3);
       margin-left: 50px;
+      margin-bottom: 200px;
     }
 
     .viewer-container.expanded ~ .landmark-list-container {
-      display: none;
+      /* display: none; */
+      transform: scale(1.3);
+      margin-left: 50px;
+      transform-origin: top left;
+    }
+    .viewer-container.expanded ~ .bottom-buttons {
+      transform: scale(1.3);
+      margin-left: 50px;
+      transform-origin: top left;
+      margin-top: -40px;
+      margin-bottom: 40px;
     }
 
     .file-list {
@@ -284,7 +317,7 @@
 <!-- breadcrumb nav -->
 <nav class="breadcrumb" id="breadcrumbNav"></nav>
 
-<div class="sidebar">View</div>
+<!-- <div class="sidebar">View</div> -->
 <!-- Main section -->
 
 <!-- hamburger button -->
@@ -305,61 +338,57 @@
       </ul>
     </div>
     <div class="main-container">
-      <!-- <div class="file-list-container" id="fileListContainer">
-        <ul class="file-list" id="fileList">
-
-          <li>test1.stl</li>
-          <li>test2.obj</li>
-          <li>long_filename_model_3.obj</li>
-
-        </ul>
-      </div> -->
 
       <div class="viewer-wrapper">
         <div class="viewer-container" id="viewerContainer">
           Loading...
         </div>
+        
+        <div class="bottom-buttons">
+          <button class="bottom-button" onclick="deleteCurrentModel()">Delete Current Model</button>
+          <button class="bottom-button" onclick="exportOBJ()">Save as OBJ</button>
+          <button class="bottom-button" onclick="exportSTL()">Save as STL</button>
+        </div>   
+
         <div class="landmark-list-container" id="landmarkListContainer">
           <h3>Landmarks</h3>
           <ul id="landmarkList"></ul>
           <div id="distanceInfo" style="padding: 10px; font-size: 0.9rem; color: var(--text-color);"></div>
         </div>
+             
       </div>
 
-    <!-- <div class="control-buttons">
-      <div class="top-buttons">
-      </div>
-      <div class="top-buttons">
-        <button onclick="toggleLandmarkMode()" id="landmarkBtn">Enter Landmark Mode</button>
-      </div>
-      <div class="top-buttons">
-        <button onclick="toggleDeleteMode()" id="deleteBtn">Enter Delete Mode</button>
-      </div> -->
-      <button class="bottom-button" onclick="deleteCurrentModel()">Delete Current Model</button>
-      <button class="bottom-button" onclick="exportOBJ()">Save as OBJ</button>
-      <button class="bottom-button" onclick="exportSTL()">Save as STL</button>
+    
   </div>
   <div class="control-buttons">
+    <div class="split-line">Direction</div>
     <div class="top-buttons">
       <button onclick="setTopView()">Top View (XY)</button>
       <button onclick="setFrontView()">Front View (XZ)</button>
       <button onclick="setSideView()">Side View (YZ)</button>
     </div>
+    <div class="split-line">Operation</div>
     <div class="top-buttons">
       <button onclick="toggleLandmarkMode()" id="landmarkBtn">Enter Landmark Mode</button>
-    </div>
-    <div class="top-buttons">
       <button onclick="toggleDeleteMode()" id="deleteBtn">Enter Delete Mode</button>
+      <button onclick="toggleMoveMode()" id="moveBtn">Enter Move Mode</button>
     </div>
+    <!-- <div class="top-buttons"> -->
+      <!-- <button onclick="toggleDeleteMode()" id="deleteBtn">Enter Delete Mode</button> -->
+    <!-- </div> -->
+    <!-- <div class="top-buttons"> -->
+      <!-- <button class="bottom-button" onclick="toggleMoveMode()" id="moveBtn">Enter Move Mode</button> -->
+      <!-- <button onclick="toggleMoveMode()" id="moveBtn">Enter Move Mode</button> -->
+    <!-- </div> -->
+    <div class="split-line">Advanced</div>
     <div class="top-buttons">
-      <button class="bottom-button" onclick="toggleDistanceMode()" id="distanceBtn">Measure Distance</button>
-    </div>
-    <div class="top-buttons">
-      <button class="bottom-button" onclick="toggleMoveMode()" id="moveBtn">Enter Move Mode</button>
-    </div>
-    <div class="top-buttons">
+      <!-- <button class="bottom-button" onclick="toggleDistanceMode()" id="distanceBtn">Measure Distance</button> -->
+      <button onclick="toggleDistanceMode()" id="distanceBtn">Measure Distance</button>
       <button onclick="startCoordinateSelection()" id="coordBtn">Create Coordinate System</button>
     </div>
+    <!-- <div class="top-buttons">
+      <button onclick="startCoordinateSelection()" id="coordBtn">Create Coordinate System</button>
+    </div> -->
 
   </div>
 </div>
