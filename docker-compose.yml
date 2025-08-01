@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   backend:
@@ -20,11 +20,3 @@ services:
       ports:
         - "8888:8888"
       restart: always
-  # slicer:
-  #     build:
-  #       context: .
-  #       dockerfile: Dockerfile.trame-slicer
-  #     container_name: trame-slicer
-  #     ports:
-  #       - "8888:8888"
-  #     restart: always
