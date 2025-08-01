@@ -7,18 +7,18 @@ This document outlines the **manual testing procedures** and **test coverage** f
 ##  Features to be Tested
 
 | Feature                     | Description                                                                 | Tested |
-|----------------------------|-----------------------------------------------------------------------------|--------|
-|  Model List Rendering     | Correctly fetches and renders all uploaded `.stl` and `.obj` model names.   | ✅     |
-|  Load Model               | Clicking a filename loads the model in the 3D viewport.                     | ✅     |
-|  Add Landmark             | User can click on the 3D model to place a labeled landmark.                 | ✅     |
-|  Delete Landmark          | Landmark can be deleted in delete mode.                                    | ✅     |
-|  Move Landmark            | Landmark can be dragged to new position.                                   | ✅ (with drift) |
-|  Set Coordinate Origin    | Select a landmark to set it as origin.                                     | ✅     |
-|  Draw Coordinate Axes     | XYZ axes appear after setting origin.                                      | ✅     |
-|  Show Relative Coordinates| Landmark list shows coordinates relative to origin.                        | ✅     |
-|  Theme Toggle             | Switch between light and dark theme.                                       | ✅     |
-|  Delete Model             | Delete model using trash icon.                                             | ✅     |
-|  Edge Case Handling       | Click outside model, delete origin, etc.                                   | ✅     |
+|---------------------------- |-----------------------------------------------------------------------------|--------|
+|  Model List Rendering       | Correctly fetches and renders all uploaded `.stl` and `.obj` model names.   | ✅     |
+|  Load Model                 | Clicking a filename loads the model in the 3D viewport.                     | ✅     |
+|  Add Landmark               | User can click on the 3D model to place a labeled landmark.                 | ✅     |
+|  Delete Landmark            | Landmark can be deleted in delete mode.                                     | ✅     |
+|  Move Landmark              | Landmark can be dragged to new position.                                    | ✅ (with drift) |
+|  Set Coordinate Origin      | Select a landmark to set it as origin.                                      | ✅     |
+|  Draw Coordinate Axes       | XYZ axes appear after setting origin.                                       | ✅     |
+|  Show Relative Coordinates  | Landmark list shows coordinates relative to origin.                         | ✅     |
+|  Theme Toggle               | Switch between light and dark theme.                                        | ✅     |
+|  Delete Model               | Delete model using trash icon.                                              | ✅     |
+|  Edge Case Handling         | Click outside model, delete origin, etc.                                    | ✅     |
 
 ---
 
@@ -40,6 +40,8 @@ Model renders correctly in the viewer.
 **Steps**:
 1. Enable `landmark mode`.
 2. Click on the 3D model.
+3. Enter the ID of the landmark.
+4. Landmark appear.
 
 **Expected Result**:
 A labeled point appears with unique ID.
@@ -54,6 +56,7 @@ A labeled point appears with unique ID.
 
 **Expected Result**:
 The landmark disappears.
+If the landmark is the originpoint of the coordinate system, a warning will raise and forbidden the request.
 
 ---
 
@@ -79,6 +82,8 @@ Landmark may drift off the model surface.
 
 **Expected Result**:
 Origin is set and axes appear.
+All landmarks will refresh the them locations based on the new axes.
+If the originpoint move the coordinate system will move with the point.
 
 ---
 
@@ -90,7 +95,46 @@ Origin is set and axes appear.
 
 ---
 
+###  Test 7: Save model
 
+**Steps**:
+1. Click the “Save as Obj” or “Save as stl” button on the page to save the current model state.
+2. If the current model contains new changes:
+   - The system should package all landmark changes into a new file (e.g., `.stl`, `.obj`).
+3. Enter name for new model.
+4. Save model.
+
+
+**Expected Result**:
+- The user can successfully save the model.
+- The new model appear directly in the list.
+- The filename should be the written one.
+- If users try to save .obj as .stl, a warning will appear.
+---
+
+###  Test 8: Delete Models
+
+**Steps**:
+1. Click a model
+2. Click `delete model`.
+
+**Expected Result**:
+The chosen model disappears.
+The model list will refresh.
+
+---
+
+###  Test 9: Delete Models
+
+**Steps**:
+1. Click the “Measure Distance” mode button to enable distance measuring mode.
+2. Select two existing landmark points on the model surface.
+3. The distance (in appropriate units) should be displayed in distance list panel.
+
+**Expected Result**:
+- Distance mode activates correctly and UI indicates it is active.
+- The distance between the two points is accurately calculated and displayed.
+- UI remains responsive while switching between other modes (e.g., landmark mode, move mode).
 
 ##  Known Issues
 
