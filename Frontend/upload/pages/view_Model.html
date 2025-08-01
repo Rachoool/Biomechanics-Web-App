@@ -393,7 +393,7 @@
 
   async function loadModelList() {
     try {
-      const res = await fetch("http://localhost:5000/api/models");
+      const res = await fetch("http://localhost:5001/api/models");
       const data = await res.json();
 
       const fileList = document.getElementById("fileList");
@@ -472,7 +472,7 @@
     controls.dampingFactor = 0.05;
 
     const ext = filename.split('.').pop().toLowerCase();
-    const modelUrl = `http://localhost:5000/uploads/${filename}`;
+    const modelUrl = `http://localhost:5001/uploads/${filename}`;
 
     function centerAndRender(object) {
       scene.add(object);
@@ -762,7 +762,7 @@
     const fullFilename = filename + ".stl";
     formData.append('files', blob, fullFilename);
 
-    fetch('http://localhost:5000/api/upload', {
+    fetch('http://localhost:5001/api/upload', {
       method: 'POST',
       body: formData
     })
@@ -801,7 +801,7 @@
     const fullFilename = filename + ".obj";
     formData.append('files', blob, fullFilename);
 
-    fetch('http://localhost:5000/api/upload', {
+    fetch('http://localhost:5001/api/upload', {
       method: 'POST',
       body: formData
     })
@@ -829,7 +829,7 @@
 
     if (!confirm(`Are you sure you want to delete "${currentFilename}"?`)) return;
 
-    fetch(`http://localhost:5000/api/delete/${currentFilename}`, {
+    fetch(`http://localhost:5001/api/delete/${currentFilename}`, {
       method: "DELETE"
     })
       .then(res => res.json())

@@ -5,7 +5,7 @@ services:
     build: ./Backend
     container_name: biomechanics-backend
     ports:
-      - "5000:5000"
+      - "5001:5000"
     volumes:
       - ./Backend/uploads:/app/uploads
       - ./Frontend:/app/Frontend
@@ -15,6 +15,7 @@ services:
       build:
         context: .
         dockerfile: Dockerfile.trame-slicer
+      platform: linux/amd64
       container_name: trame-slicer
       ports:
         - "8888:8888"

@@ -6,10 +6,9 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# 复制后端代码和依赖
 COPY . .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 5000
+EXPOSE 5001
 CMD ["python", "app.py"]
