@@ -71,7 +71,7 @@
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      justify-content: flex-end; 
+      justify-content: flex-end;
     }
     .bottom-button {
       /* align-self: flex-end; */
@@ -138,7 +138,7 @@
       margin-top: -5px;
       margin-bottom: -20px;
     }
-  
+
     .file-list-container {
       width: 200px;
       height: 500px;
@@ -251,8 +251,8 @@
     }
     .filename-header {
       display: flex;
-      align-items: center; 
-      gap: 10px;           
+      align-items: center;
+      gap: 10px;
       padding: 10px;
     }
     .hamburger {
@@ -343,22 +343,22 @@
         <div class="viewer-container" id="viewerContainer">
           Loading...
         </div>
-        
+
         <div class="bottom-buttons">
           <button class="bottom-button" onclick="deleteCurrentModel()">Delete Current Model</button>
           <button class="bottom-button" onclick="exportOBJ()">Save as OBJ</button>
           <button class="bottom-button" onclick="exportSTL()">Save as STL</button>
-        </div>   
+        </div>
 
         <div class="landmark-list-container" id="landmarkListContainer">
           <h3>Landmarks</h3>
           <ul id="landmarkList"></ul>
           <div id="distanceInfo" style="padding: 10px; font-size: 0.9rem; color: var(--text-color);"></div>
         </div>
-             
+
       </div>
 
-    
+
   </div>
   <div class="control-buttons">
     <div class="split-line">Direction</div>
@@ -402,15 +402,15 @@
   let deleteMode = false;
   let coordinateMode = false;
   let coordinateAxesGroup = null; // THREE.Group，
-  let coordinateOrigin = null;    
+  let coordinateOrigin = null;
   let distanceMode = false;
   let selectedForDistance = [];
   let dragControls;
-  const draggableLandmarks = []; // all draggable landmarks 
+  const draggableLandmarks = []; // all draggable landmarks
   let moveMode = false;
 
   const landmarks = [];
-  const landmarkData = new Map(); // save landmark 
+  const landmarkData = new Map(); // save landmark
 
   const mouse = new THREE.Vector2();
   const raycaster = new THREE.Raycaster();
@@ -695,7 +695,7 @@
     label.position.copy(position);
     scene.add(label);
     draggableLandmarks.push(landmark);
-    updateDragControls(); 
+    updateDragControls();
 
     landmarkData.set(landmark, { name, label });
     landmarkInfoList.push(
@@ -755,7 +755,7 @@
 
     const spriteMaterial = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false });
     const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(15, 7.5, 1);  
+    sprite.scale.set(15, 7.5, 1);
 
     return sprite;
 }
@@ -966,7 +966,7 @@
 
     selectedForDistance.push(obj);
     if (selectedForDistance.length > 2) {
-      selectedForDistance.shift(); 
+      selectedForDistance.shift();
     }
 
     if (selectedForDistance.length === 2) {
@@ -980,37 +980,116 @@
     }
   }
 
+  // function updateDragControls() {
+  //   if (dragControls) {
+  //     dragControls.deactivate();
+  //     dragControls.dispose();
+  //   }
+  //
+  //   if (!moveMode) return;
+  //
+  //   dragControls = new THREE.DragControls(draggableLandmarks, camera, renderer.domElement);
+  //
+  //   dragControls.addEventListener('dragstart', function (event) {
+  //     controls.enabled = false;
+  //
+  //     if (landmarkMode) toggleLandmarkMode();
+  //     if (deleteMode) toggleDeleteMode();
+  //     if (distanceMode) toggleDistanceMode();
+  //   });
+  //
+  //   dragControls.addEventListener('dragend', function (event) {
+  //     controls.enabled = true;
+  //
+  //     const obj = event.object;
+  //     const info = landmarkData.get(obj);
+  //     if (info) {
+  //       if (info.label) {
+  //         info.label.position.copy(obj.position);
+  //       }
+  //
+  //       if (obj === coordinateOriginLandmark) {
+  //         coordinateOrigin = obj.position.clone();
+  //
+  //         if (coordinateAxesGroup) {
+  //           scene.remove(coordinateAxesGroup);
+  //           coordinateAxesGroup = new THREE.Group();
+  //           const length = 20;
+  //           const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), coordinateOrigin, length, 0xff0000);
+  //           const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), coordinateOrigin, length, 0x00ff00);
+  //           const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), coordinateOrigin, length, 0x0000ff);
+  //           coordinateAxesGroup.add(arrowX, arrowY, arrowZ);
+  //           scene.add(coordinateAxesGroup);
+  //         }
+  //       }
+  //
+  //       const landmarkList = document.getElementById("landmarkList");
+  //       landmarkList.innerHTML = "";
+  //
+  //       for (const [target, data] of landmarkData.entries()) {
+  //         const relative = coordinateOrigin
+  //           ? new THREE.Vector3().copy(target.position).sub(coordinateOrigin)
+  //           : target.position;
+  //
+  //         const li = document.createElement("li");
+  //         li.textContent = `${data.name} (${relative.x.toFixed(1)}, ${relative.y.toFixed(1)}, ${relative.z.toFixed(1)})`;
+  //         landmarkList.appendChild(li);
+  //       }
+  //
+  //       renderer.render(scene, camera);
+  //     }
+  //   });
+  // }
+
   function updateDragControls() {
     if (dragControls) {
       dragControls.deactivate();
       dragControls.dispose();
+      dragControls = null;
     }
 
-    if (!moveMode) return; 
+    if (!moveMode) return;
 
-    dragControls = new THREE.DragControls(draggableLandmarks, camera, renderer.domElement);
+    let selectedLandmark = null;
 
-    dragControls.addEventListener('dragstart', function (event) {
-      controls.enabled = false;
+    function onMouseDown(event) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-      if (landmarkMode) toggleLandmarkMode();
-      if (deleteMode) toggleDeleteMode();
-      if (distanceMode) toggleDistanceMode();
-    });
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(draggableLandmarks, true);
 
-    dragControls.addEventListener('dragend', function (event) {
-      controls.enabled = true;
+      if (intersects.length > 0) {
+        selectedLandmark = intersects[0].object;
+        controls.enabled = false;
+      }
+    }
 
-      const obj = event.object;
-      const info = landmarkData.get(obj);
-      if (info) {
-        if (info.label) {
-          info.label.position.copy(obj.position);
-        }
+    function onMouseMove(event) {
+      if (!selectedLandmark) return;
 
-        if (obj === coordinateOriginLandmark) {
-          coordinateOrigin = obj.position.clone();
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
+      raycaster.setFromCamera(mouse, camera);
+
+      const modelMeshes = scene.children.filter(
+        obj => obj.isMesh && !draggableLandmarks.includes(obj)
+      );
+
+      const intersects = raycaster.intersectObjects(modelMeshes, true);
+
+      if (intersects.length > 0) {
+        const point = intersects[0].point;
+        selectedLandmark.position.copy(point);
+
+        const info = landmarkData.get(selectedLandmark);
+        if (info && info.label) info.label.position.copy(point);
+
+        if (selectedLandmark === coordinateOriginLandmark) {
+          coordinateOrigin = point.clone();
           if (coordinateAxesGroup) {
             scene.remove(coordinateAxesGroup);
             coordinateAxesGroup = new THREE.Group();
@@ -1023,23 +1102,41 @@
           }
         }
 
+        // update list
         const landmarkList = document.getElementById("landmarkList");
         landmarkList.innerHTML = "";
-
-        for (const [target, data] of landmarkData.entries()) {
-          const relative = coordinateOrigin
-            ? new THREE.Vector3().copy(target.position).sub(coordinateOrigin)
-            : target.position;
-
+        for (const [obj, info] of landmarkData.entries()) {
+          const rel = coordinateOrigin
+            ? new THREE.Vector3().copy(obj.position).sub(coordinateOrigin)
+            : obj.position;
           const li = document.createElement("li");
-          li.textContent = `${data.name} (${relative.x.toFixed(1)}, ${relative.y.toFixed(1)}, ${relative.z.toFixed(1)})`;
+          li.textContent = `${info.name} (${rel.x.toFixed(1)}, ${rel.y.toFixed(1)}, ${rel.z.toFixed(1)})`;
           landmarkList.appendChild(li);
         }
 
         renderer.render(scene, camera);
       }
-    });
+    }
+
+    function onMouseUp() {
+      selectedLandmark = null;
+      controls.enabled = true;
+    }
+
+    renderer.domElement.addEventListener('mousedown', onMouseDown);
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+    renderer.domElement.addEventListener('mouseup', onMouseUp);
+
+    dragControls = {
+      deactivate: () => {
+        renderer.domElement.removeEventListener('mousedown', onMouseDown);
+        renderer.domElement.removeEventListener('mousemove', onMouseMove);
+        renderer.domElement.removeEventListener('mouseup', onMouseUp);
+      },
+      dispose: () => {}
+    };
   }
+
 
   function toggleMoveMode() {
     moveMode = !moveMode;
@@ -1052,9 +1149,9 @@
       if (landmarkMode) toggleLandmarkMode();
       if (deleteMode) toggleDeleteMode();
       if (distanceMode) toggleDistanceMode();
-      updateDragControls();  
+      updateDragControls();
     } else {
-      updateDragControls();  
+      updateDragControls();
     }
   }
 
