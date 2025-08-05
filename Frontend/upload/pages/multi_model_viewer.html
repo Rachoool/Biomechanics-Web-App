@@ -271,6 +271,25 @@
       left: 5%;
     }
 
+    .control-buttons {
+      display: none !important;
+    }
+
+    .control-buttons {
+      display: none !important;
+    }
+
+    .bottom-buttons {
+      display: none !important;
+    }
+
+
+    #landmarkList,
+    .landmark-list-container,
+    #landmarkList li{
+      display: none !important;
+    }
+
 
   </style>
 
@@ -316,6 +335,13 @@
 
 <!-- breadcrumb nav -->
 <nav class="breadcrumb" id="breadcrumbNav"></nav>
+
+<div style="margin: 10px 30px;">
+  <button onclick="goBackToPreviousPage()" style="padding: 8px 16px; background-color: #00b8a9; color: white; border: none; border-radius: 4px; cursor: pointer;">
+    ← Return
+  </button>
+</div>
+
 
 <!-- <div class="sidebar">View</div> -->
 <!-- Main section -->
@@ -373,29 +399,13 @@
       <button onclick="toggleDeleteMode()" id="deleteBtn">Enter Delete Mode</button>
       <button onclick="toggleMoveMode()" id="moveBtn">Enter Move Mode</button>
     </div>
-    <!-- <div class="top-buttons"> -->
-    <!-- <button onclick="toggleDeleteMode()" id="deleteBtn">Enter Delete Mode</button> -->
-    <!-- </div> -->
-    <!-- <div class="top-buttons"> -->
-    <!-- <button class="bottom-button" onclick="toggleMoveMode()" id="moveBtn">Enter Move Mode</button> -->
-    <!-- <button onclick="toggleMoveMode()" id="moveBtn">Enter Move Mode</button> -->
-    <!-- </div> -->
+
     <div class="split-line">Advanced</div>
     <div class="top-buttons">
       <!-- <button class="bottom-button" onclick="toggleDistanceMode()" id="distanceBtn">Measure Distance</button> -->
       <button onclick="toggleDistanceMode()" id="distanceBtn">Measure Distance</button>
       <button onclick="startCoordinateSelection()" id="coordBtn">Create Coordinate System</button>
     </div>
-
-    <div class="split-line">View</div>
-    <div class="top-buttons">
-      <button onclick="window.location.href='multi_model_viewer.html'">
-        View Multiple Models
-      </button>
-    </div>
-    <!-- <div class="top-buttons">
-      <button onclick="startCoordinateSelection()" id="coordBtn">Create Coordinate System</button>
-    </div> -->
 
   </div>
 </div>
@@ -421,6 +431,21 @@
 
   const mouse = new THREE.Vector2();
   const raycaster = new THREE.Raycaster();
+
+  const modelGroupMap = new Map();
+
+  let modelOffsetIndex = 0;  // 加载模型时用来控制位置
+  // const MODEL_OFFSET_STEP = 200;  // 每个模型之间的间距
+  const SPACING = 50;
+
+  function goBackToPreviousPage() {
+    const file = getQueryParam('file');
+    window.location.href = `view_model.html?file=${encodeURIComponent(file)}`;
+  }
+
+
+
+
 
   function getQueryParam(name) {
     const params = new URLSearchParams(window.location.search);
@@ -478,13 +503,9 @@
   function loadModel(filename) {
     console.log(`[Model] Loading model file: ${filename}`);
     currentFilename = filename;
-    const modelFilenameDiv = document.getElementById("modelFilename");
-    document.getElementById("modelFilename").textContent = filename;
-    const container = document.getElementById("viewerContainer");
-    container.innerHTML = "";
 
-    // loaded file name active status control
-    modelFilenameDiv.classList.add('active');
+    document.getElementById("modelFilename").textContent = filename;
+
     const lis = document.querySelectorAll("#fileList li");
     lis.forEach(li => li.classList.remove("active"));
     const selectedLi = Array.from(lis).find(li => li.textContent === filename);
@@ -492,118 +513,53 @@
       selectedLi.classList.add("active");
     }
 
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, 800 / 500, 0.1, 1000);
-    camera.position.set(0, 0, 100);
-
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(800, 500);
-    container.appendChild(renderer.domElement);
-
-    const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
-    scene.add(light);
-
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-
-    const ext = filename.split('.').pop().toLowerCase();
     const modelUrl = `http://localhost:5001/uploads/${filename}`;
+    const ext = filename.split('.').pop().toLowerCase();
+
+    if (modelGroupMap.has(filename)) {
+      console.log(`[Model] ${filename} already loaded.`);
+      return;
+    }
+
+    const modelGroup = new THREE.Group();
+    modelGroup.name = filename;
+    modelGroupMap.set(filename, modelGroup);
+    scene.add(modelGroup);
 
     function centerAndRender(object) {
-      scene.add(object);
       const box = new THREE.Box3().setFromObject(object);
       const center = box.getCenter(new THREE.Vector3());
       object.position.sub(center);
-      camera.position.set(0, 0, box.getSize(new THREE.Vector3()).length() * 1.2);
+
+      scene.add(object);
+      modelGroupMap.set(currentFilename, object);
+
+      let offsetX = 0;
+      const groups = Array.from(modelGroupMap.values());
+
+      for (let i = 0; i < groups.length; i++) {
+        const group = groups[i];
+
+        const box = new THREE.Box3().setFromObject(group);
+        const size = box.getSize(new THREE.Vector3());
+
+        group.position.x = offsetX + size.x / 2;
+
+        offsetX += size.x + SPACING;
+      }
+
+      const fullBox = new THREE.Box3();
+      groups.forEach(g => fullBox.expandByObject(g));
+
+      const fullSize = fullBox.getSize(new THREE.Vector3());
+      const centerOfAll = fullBox.getCenter(new THREE.Vector3());
+
+      const cameraZ = Math.max(fullSize.x * 0.8, 300);
+      camera.position.set(centerOfAll.x, centerOfAll.y, cameraZ);
+      controls.target.copy(centerOfAll);
       controls.update();
-      animate();
 
-      renderer.domElement.addEventListener('click', (event) => {
-        const rect = renderer.domElement.getBoundingClientRect();
-        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(scene.children, true);
-
-        if (intersects.length > 0) {
-          const target = intersects[0].object;
-
-          if (coordinateMode && landmarkData.has(target)) {
-            coordinateMode = false;
-
-            if (coordinateAxesGroup) {
-              scene.remove(coordinateAxesGroup);
-              coordinateAxesGroup = null;
-            }
-
-            coordinateOrigin = target.position.clone();
-
-            coordinateOriginLandmark = target;
-
-            coordinateAxesGroup = new THREE.Group();
-
-            const length = 20;
-            const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), coordinateOrigin, length, 0xff0000); // red
-            const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), coordinateOrigin, length, 0x00ff00); // green
-            const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), coordinateOrigin, length, 0x0000ff); // blue
-
-            coordinateAxesGroup.add(arrowX, arrowY, arrowZ);
-            scene.add(coordinateAxesGroup);
-
-
-            const landmarkList = document.getElementById("landmarkList");
-            landmarkList.innerHTML = "";
-
-            for (const [obj, info] of landmarkData.entries()) {
-              const rel = new THREE.Vector3().copy(obj.position).sub(coordinateOrigin);
-              const li = document.createElement("li");
-              li.textContent = `${info.name} (${rel.x.toFixed(1)}, ${rel.y.toFixed(1)}, ${rel.z.toFixed(1)})`;
-              landmarkList.appendChild(li);
-            }
-
-            renderer.render(scene, camera);
-          }
-
-
-          if (landmarkMode) {
-            const point = intersects[0].point;
-            addLandmarkAt(point);
-          } else if (deleteMode && target.geometry?.type === "SphereGeometry") {
-            if (target === coordinateOriginLandmark) {
-              alert("❌ This point is the origin of the coordinate system and cannot be deleted.");
-              return;
-            }
-            scene.remove(target);
-
-            const info = landmarkData.get(target);
-            if (info){
-              if (info.label){
-                scene.remove(info.label);
-              }
-
-              const landmarkList = document.getElementById("landmarkList");
-              const items = landmarkList.getElementsByTagName("li");
-              for (let i = 0; i < items.length; i++) {
-                if (items[i].textContent.startsWith(info.name + " ")) {
-                  landmarkList.removeChild(items[i]);
-                  break;
-                }
-              }
-              if (coordinateOrigin && target.position.distanceTo(coordinateOrigin) < 0.001) {
-                if (coordinateAxesGroup) {
-                  scene.remove(coordinateAxesGroup);
-                  coordinateAxesGroup = null;
-                }
-                coordinateOrigin = null;
-              }
-              landmarkData.delete(target);
-            }
-            renderer.render(scene, camera);
-          }
-        }
-      });
+      renderer.render(scene, camera);
     }
 
     if (ext === "stl") {
@@ -614,26 +570,47 @@
         centerAndRender(mesh);
       }, undefined, error => {
         console.error(error);
-        container.textContent = "Failed to load STL model.";
+        alert("❌ Failed to load STL model.");
       });
-    } else if (ext === "obj") {
+    }
+
+    else if (ext === "obj") {
       const loader = new THREE.OBJLoader();
       loader.load(modelUrl, object => {
         centerAndRender(object);
       }, undefined, error => {
         console.error(error);
-        container.textContent = "Failed to load OBJ model.";
+        alert("❌ Failed to load OBJ model.");
       });
-    } else {
-      container.textContent = "Unsupported file type.";
     }
 
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
+    else {
+      alert("❌ Unsupported file type.");
     }
   }
+
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(75, 800 / 500, 0.1, 1000);
+  camera.position.set(0, 0, 600);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(800, 500);
+  document.getElementById("viewerContainer").appendChild(renderer.domElement);
+
+  const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+  scene.add(light);
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+
 
   window.onload = loadModelList;
 
