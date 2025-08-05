@@ -8,6 +8,8 @@ Run tests from the project **root**:
 ```bash
 python -m pytest Backend/tests --disable-warnings -v
 ```
+The test files are written to automatically adapt to the execution directory,
+so no manual path changes are required whether running from the project root or the Backend directory.
 
 ## 2. Scope
 The test suite covers the following backend API endpoints:

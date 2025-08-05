@@ -2,15 +2,26 @@ import os
 import sys
 import pytest
 
-# Ensure Backend directory is in sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Add both current directory and its parent to sys.path
+current_dir = os.path.abspath(os.path.dirname(__file__))
+backend_dir = os.path.abspath(os.path.join(current_dir, '..'))
+project_root = os.path.abspath(os.path.join(backend_dir, '..'))
 
-from Backend.app import app
+sys.path.append(backend_dir)    # so "from app import app" works if in Backend
+sys.path.append(project_root)   # so "from Backend.app import app" works if in project root
+
+try:
+    from Backend.app import app
+except ModuleNotFoundError:
+    from app import app
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
     app.config['UPLOAD_FOLDER'] = tmp_path
-    monkeypatch.setattr("Backend.app.UPLOAD_FOLDER", tmp_path)
+    try:
+        monkeypatch.setattr("Backend.app.UPLOAD_FOLDER", tmp_path)
+    except ModuleNotFoundError:
+        monkeypatch.setattr("app.UPLOAD_FOLDER", tmp_path)
     with app.test_client() as client:
         yield client
 
