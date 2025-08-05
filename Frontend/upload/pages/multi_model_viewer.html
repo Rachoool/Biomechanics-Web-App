@@ -34,7 +34,7 @@
     .main-wrapper {
       display: flex;
       flex-direction: row;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: flex-start;
       overflow-x: auto;
       gap: 20px;
@@ -53,19 +53,18 @@
       align-items: flex-start;
       justify-content: flex-start;
       box-sizing: border-box;
+      flex-grow: 1;
+      max-width: calc(100% - 240px);
     }
 
-
     .viewer-wrapper {
-      /* position: relative;
       display: flex;
       flex-direction: column;
-      justify-content: space-between; */
-      /* display: flex; */
-      flex-direction: column;
-      justify-content: space-between;
+      /*justify-content: space-between;*/
+      /*align-items: center;*/
+      justify-content: flex-start;
       align-items: flex-start;
-      gap: 10px;
+      gap: 40px;
     }
     .bottom-buttons {
       display: flex;
@@ -146,6 +145,9 @@
       border: 2px solid #ccc;
       background-color: #fff;
       font-size: 0.95rem;
+      position: sticky;
+      margin-right: 50px;
+      margin-left: 30px;
     }
 
     .file-list-container.collapsed {
@@ -169,7 +171,7 @@
       transform-origin: top left;
     } */
     .viewer-container.expanded {
-      transform: scale(1.3);
+      transform: scale(1.5);
       margin-left: 50px;
       margin-bottom: 200px;
     }
@@ -289,6 +291,7 @@
     #landmarkList li{
       display: none !important;
     }
+
 
 
   </style>
@@ -595,6 +598,8 @@
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(800, 500);
+  const viewer = document.getElementById("viewerContainer");
+  viewer.innerHTML = "";
   document.getElementById("viewerContainer").appendChild(renderer.domElement);
 
   const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
