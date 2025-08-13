@@ -55,5 +55,5 @@ compatibility issues may occur with different models or software versions.
 If the slicer license prevents deployment,  
 comment out the slicer section in the `docker-compose.yml` file and try running again.
 
-![App Screenshot](docs/images/docker_yml.png)
+![App Screenshot](docs/image/docker_yml.png)
 ---
