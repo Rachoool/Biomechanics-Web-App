@@ -45,8 +45,6 @@ http://127.0.0.1:5001
 
 ---
 
----
-
 ## 2. Compatibility Notes
 
 Due to the sensitivity of the **Trame slicer** tool to environmental configurations,  
